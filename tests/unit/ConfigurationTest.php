@@ -1,15 +1,15 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Test\TestCase;
 
 class ConfigurationTest extends TestCase
 {
     /**
      * Large ports should be out of range
      *
-     * @expectedException \Graze\DDStatsD\Exception\ConfigurationException
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
      */
     public function testLargePort()
     {
@@ -22,7 +22,7 @@ class ConfigurationTest extends TestCase
     /**
      * Non-integer ports are not acceptable
      *
-     * @expectedException \Graze\DDStatsD\Exception\ConfigurationException
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
      */
     public function testStringPort()
     {

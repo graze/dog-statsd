@@ -1,9 +1,9 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Client;
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Client;
+use Graze\DogStatsD\Test\TestCase;
 
 class NamespaceTest extends TestCase
 {
@@ -35,7 +35,7 @@ class NamespaceTest extends TestCase
             'port' => 8125,
             'namespace' => 'test_namespace'
         ));
-        $this->client->event('some_title','textAndThings');
+        $this->client->event('some_title', 'textAndThings');
         $this->assertEquals('_e{10,13}:test_namespace.some_title|textAndThings', $this->client->getLastMessage());
     }
 

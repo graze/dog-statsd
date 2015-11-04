@@ -5,7 +5,8 @@
         "graze",
         "statsd-dd",
         "statsd",
-        "datadog"
+        "datadog",
+        "dogstatsd"
     ],
     "homepage": "https://github.com/graze/statsd-dd",
     "license": "MIT",
@@ -26,17 +27,18 @@
         "php": ">=5.5.0"
     },
     "require-dev": {
-        "phpunit/phpunit" : "4.*"
+        "phpunit/phpunit" : "4.*",
+        "squizlabs/php_codesniffer": "^2.3"
     },
     "autoload": {
         "psr-4": {
-            "Graze\\DDStatsD\\": "src"
+            "Graze\\DogStatsD\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Graze\\DDStatsD\\Test\\": "tests/src",
-            "Graze\\DDStatsD\\Test\\Unit\\": "tests/unit"
+            "Graze\\DogStatsD\\Test\\": "tests/src",
+            "Graze\\DogStatsD\\Test\\Unit\\": "tests/unit"
         }
     }
 }

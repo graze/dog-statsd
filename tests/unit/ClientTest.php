@@ -1,9 +1,9 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Client;
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Client;
+use Graze\DogStatsD\Test\TestCase;
 
 class ClientTest extends TestCase
 {

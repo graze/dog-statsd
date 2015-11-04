@@ -1,8 +1,8 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Test\TestCase;
 
 class GaugeTest extends TestCase
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Client;
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Client;
+use Graze\DogStatsD\Test\TestCase;
 
 class EventTest extends TestCase
 {
@@ -53,5 +53,16 @@ class EventTest extends TestCase
     {
         $this->client->event('some_title', "LongText\rAnd\nStuff");
         $this->assertEquals("_e{10,18}:some_title|LongTextAnd\\nStuff", $this->client->getLastMessage());
+    }
+
+    public function testCoreStatsDImplementation()
+    {
+        $this->client->configure(array(
+            'host' => '127.0.0.1',
+            'port' => 8125,
+            'dataDog' => false
+        ));
+        $this->client->event('some_title', 'textAndThings');
+        $this->assertEquals('', $this->client->getLastMessage());
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace Graze\DDStatsD\Test;
+namespace Graze\DogStatsD\Test;
 
-use Graze\DDStatsD\Client;
+use Graze\DogStatsD\Client;
 use PHPUnit_Framework_TestCase;
 
 class TestCase extends PHPUnit_Framework_TestCase

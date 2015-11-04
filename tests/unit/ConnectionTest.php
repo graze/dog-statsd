@@ -1,15 +1,15 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Test\TestCase;
 
 class ConnectionTest extends TestCase
 {
     /**
      * Non-integer ports are not acceptable
      *
-     * @expectedException \Graze\DDStatsD\Exception\ConnectionException
+     * @expectedException \Graze\DogStatsD\Exception\ConnectionException
      */
     public function testInvalidHost()
     {

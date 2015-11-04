@@ -1,9 +1,9 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Client;
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Client;
+use Graze\DogStatsD\Test\TestCase;
 
 class ServiceCheckTest extends TestCase
 {
@@ -61,5 +61,16 @@ class ServiceCheckTest extends TestCase
             '_sc|service.api|3|d:12345678|#tag|m:some_message',
             $this->client->getLastMessage()
         );
+    }
+
+    public function testCoreStatsDImplementation()
+    {
+        $this->client->configure(array(
+            'host' => '127.0.0.1',
+            'port' => 8125,
+            'dataDog' => false
+        ));
+        $this->client->serviceCheck('service.api', Client::STATUS_OK);
+        $this->assertEquals('', $this->client->getLastMessage());
     }
 }

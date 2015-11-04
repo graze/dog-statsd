@@ -1,8 +1,8 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
+namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DDStatsD\Test\TestCase;
+use Graze\DogStatsD\Test\TestCase;
 
 class CounterTest extends TestCase
 {
@@ -23,7 +23,7 @@ class CounterTest extends TestCase
     public function testIncrementSample()
     {
         while ($this->client->getLastMessage() === '') {
-            $this->client->increment('test_metric', 1,  0.75);
+            $this->client->increment('test_metric', 1, 0.75);
         }
         $this->assertEquals('test_metric:1|c|@0.75', $this->client->getLastMessage());
     }

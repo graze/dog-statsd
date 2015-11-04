@@ -1,9 +1,9 @@
 <?php
 
-namespace Graze\DDStatsD\Exception;
+namespace Graze\DogStatsD\Exception;
 
 use Exception;
-use Graze\DDStatsD\Client;
+use Graze\DogStatsD\Client;
 
 /**
  * Connection Exception Class

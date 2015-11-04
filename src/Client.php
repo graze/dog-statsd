@@ -1,9 +1,9 @@
 <?php
 
-namespace Graze\DDStatsD;
+namespace Graze\DogStatsD;
 
-use Graze\DDStatsD\Exception\ConfigurationException;
-use Graze\DDStatsD\Exception\ConnectionException;
+use Graze\DogStatsD\Exception\ConfigurationException;
+use Graze\DogStatsD\Exception\ConnectionException;
 
 /**
  * StatsD Client Class - Modified to support DataDogs statsd server
@@ -117,6 +117,13 @@ class Client
     ];
 
     /**
+     * Is the server type DataDog implementation
+     *
+     * @var bool
+     */
+    protected $dataDog = true;
+
+    /**
      * Singleton Reference
      *
      * @param  string $name Instance name
@@ -186,6 +193,10 @@ class Client
 
         if (isset($options['throwConnectionExceptions'])) {
             $this->throwConnectionExceptions = $options['throwConnectionExceptions'];
+        }
+
+        if ((isset($options['dataDog'])) && (!$options['dataDog'])) {
+            $this->dataDog = false;
         }
 
         return $this;
@@ -371,6 +382,10 @@ class Client
      */
     public function event($title, $text, array $metadata = [], array $tags = [])
     {
+        if (!$this->dataDog) {
+            return $this;
+        }
+
         $text = str_replace(["\r", "\n"], ['', "\\n"], $text);
         $metric = sprintf('_e{%d,%d}', strlen($title), strlen($text));
         $prefix = $this->namespace ? $this->namespace . '.' : '';
@@ -406,6 +421,10 @@ class Client
      */
     public function serviceCheck($name, $status, array $metadata = [], array $tags = [])
     {
+        if (!$this->dataDog) {
+            return $this;
+        }
+
         $prefix = $this->namespace ? $this->namespace . '.' : '';
         $value = sprintf('_sc|%s|%d', $prefix . $name, $status);
 
@@ -433,7 +452,7 @@ class Client
      */
     private function formatTags(array $tags = [])
     {
-        if (count($tags) === 0) {
+        if (!$this->dataDog || count($tags) === 0) {
             return '';
         }
 

@@ -1,10 +1,11 @@
 <?php
 
-namespace Graze\DDStatsD\Test\Unit;
-use Graze\DDStatsD\Exception\ConnectionException;
-use Graze\DDStatsD\Exception\ConfigurationException;
-use Graze\DDStatsD\Client;
-use Graze\DDStatsD\Test\TestCase;
+namespace Graze\DogStatsD\Test\Unit;
+
+use Graze\DogStatsD\Exception\ConnectionException;
+use Graze\DogStatsD\Exception\ConfigurationException;
+use Graze\DogStatsD\Client;
+use Graze\DogStatsD\Test\TestCase;
 
 class ExceptionTest extends TestCase
 {
