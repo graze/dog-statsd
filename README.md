@@ -1,9 +1,9 @@
-# graze/statsd-dd
+# graze/dog-statsd
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/graze/statsd-dd.svg?style=flat-square)](https://packagist.org/packages/graze/statsd-dd)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/graze/dog-statsd.svg?style=flat-square)](https://packagist.org/packages/graze/dog-statsd)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://img.shields.io/travis/graze/statsd-dd/master.svg?style=flat-square)](https://travis-ci.org/graze/statsd-dd)
-[![Total Downloads](https://img.shields.io/packagist/dt/graze/statsd-dd.svg?style=flat-square)](https://packagist.org/packages/graze/statsd-dd)
+[![Build Status](https://img.shields.io/travis/graze/dog-statsd/master.svg?style=flat-square)](https://travis-ci.org/graze/dog-statsd)
+[![Total Downloads](https://img.shields.io/packagist/dt/graze/dog-statsd.svg?style=flat-square)](https://packagist.org/packages/graze/dog-statsd)
 
 Client to talk to [DataDogs StatsD Agent](http://docs.datadoghq.com/guides/dogstatsd) Forked from:
 [League/StatsD](https://github.com/thephpleague/statsd)
@@ -13,7 +13,7 @@ Client to talk to [DataDogs StatsD Agent](http://docs.datadoghq.com/guides/dogst
 Via Composer
 
 ``` bash
-$ composer require graze/statsd-dd
+$ composer require graze/dog-statsd
 ```
 
 ## Usage

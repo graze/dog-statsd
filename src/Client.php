@@ -159,7 +159,7 @@ class Client
      */
     public function __toString()
     {
-        return 'StatsD\Client::[' . $this->instance_id . ']';
+        return 'DogStatsD\Client::[' . $this->instance_id . ']';
     }
 
     /**

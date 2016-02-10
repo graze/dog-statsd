@@ -1,14 +1,14 @@
 {
-    "name": "graze/statsd-dd",
+    "name": "graze/dog-statsd",
     "description": "DataDog StatsD Client",
     "keywords": [
         "graze",
-        "statsd-dd",
+        "dog-statsd",
         "statsd",
         "datadog",
         "dogstatsd"
     ],
-    "homepage": "https://github.com/graze/statsd-dd",
+    "homepage": "https://github.com/graze/dog-statsd",
     "license": "MIT",
     "authors": [
         {

@@ -1,6 +1,6 @@
 # Change Log
 
-All Notable changes to `graze/statsd-dd` will be documented in this file
+All Notable changes to `graze/dog-statsd` will be documented in this file
 
 ## [Version] - YYYY-MM-DD
 
