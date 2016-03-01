@@ -12,7 +12,6 @@ class TimerTest extends TestCase
         $this->assertEquals('test_metric:123|ms', $this->client->getLastMessage());
     }
 
-
     public function testFunctionTiming()
     {
         $this->client->time('test_metric', function () {

@@ -7,8 +7,6 @@ use Graze\DogStatsD\Exception\ConnectionException;
 
 /**
  * StatsD Client Class - Modified to support DataDogs statsd server
- *
- * @author Marc Qualie <marc@marcqualie.com>
  */
 class Client
 {
@@ -37,7 +35,7 @@ class Client
      *
      * @var string
      */
-    protected $instance_id;
+    protected $instanceId;
 
     /**
      * Server Host
@@ -70,7 +68,7 @@ class Client
     /**
      * Timeout for creating the socket connection
      *
-     * @var null|float
+     * @var null|int
      */
     protected $timeout;
 
@@ -79,7 +77,7 @@ class Client
      *
      * @var bool
      */
-    protected $throwConnectionExceptions = true;
+    protected $throwExceptions = true;
 
     /**
      * Metadata for the DataDog event message
@@ -124,6 +122,13 @@ class Client
     protected $dataDog = true;
 
     /**
+     * Set of default tags to send to every request
+     *
+     * @var array
+     */
+    protected $tags = [];
+
+    /**
      * Singleton Reference
      *
      * @param  string $name Instance name
@@ -132,23 +137,23 @@ class Client
      */
     public static function instance($name = 'default')
     {
-        if (!isset(self::$instances[$name])) {
-            self::$instances[$name] = new static($name);
+        if (!isset(static::$instances[$name])) {
+            static::$instances[$name] = new static($name);
         }
-        return self::$instances[$name];
+        return static::$instances[$name];
     }
 
     /**
      * Create a new instance
      *
-     * @param string $instance_id
+     * @param string|null $instanceId
      */
-    public function __construct($instance_id = null)
+    public function __construct($instanceId = null)
     {
-        $this->instance_id = $instance_id ?: uniqid();
+        $this->instanceId = $instanceId ?: uniqid();
 
         if (empty($this->timeout)) {
-            $this->timeout = ini_get('default_socket_timeout');
+            $this->timeout = (int) ini_get('default_socket_timeout');
         }
     }
 
@@ -159,44 +164,42 @@ class Client
      */
     public function __toString()
     {
-        return 'DogStatsD\Client::[' . $this->instance_id . ']';
+        return 'DogStatsD\Client::[' . $this->instanceId . ']';
     }
 
     /**
      * Initialize Connection Details
      *
      * @param array $options Configuration options
+     *                       :host <string|ip> - host to talk to
+     *                       :port <int> - Port to communicate with
+     *                       :namespace <string> - Default namespace
+     *                       :timeout <int> - Timeout in seconds
+     *                       :throwExceptions <bool> - Throw an exception on connection error
+     *                       :dataDog <bool> - Use DataDog's version of statsd (Default: true)
+     *                       :tags <array> - List of tags to add to each message
      *
      * @return Client This instance
      * @throws ConfigurationException If port is invalid
      */
-    public function configure(array $options = array())
+    public function configure(array $options = [])
     {
-        if (isset($options['host'])) {
-            $this->host = $options['host'];
-        }
-        if (isset($options['port'])) {
-            $port = (int) $options['port'];
-            if (!$port || !is_numeric($port) || $port > 65535) {
-                throw new ConfigurationException($this, 'Port is out of range');
+        $setOption = function ($name) use ($options) {
+            if (isset($options[$name])) {
+                $this->{$name} = $options[$name];
             }
-            $this->port = $port;
-        }
+        };
 
-        if (isset($options['namespace'])) {
-            $this->namespace = $options['namespace'];
-        }
+        $setOption('host');
+        $setOption('port');
+        $setOption('namespace');
+        $setOption('timeout');
+        $setOption('throwExceptions');
+        $setOption('dataDog');
+        $setOption('tags');
 
-        if (isset($options['timeout'])) {
-            $this->timeout = $options['timeout'];
-        }
-
-        if (isset($options['throwConnectionExceptions'])) {
-            $this->throwConnectionExceptions = $options['throwConnectionExceptions'];
-        }
-
-        if ((isset($options['dataDog'])) && (!$options['dataDog'])) {
-            $this->dataDog = false;
+        if (!$this->port || !is_numeric($this->port) || $this->port > 65535) {
+            throw new ConfigurationException($this, 'Port is out of range');
         }
 
         return $this;
@@ -215,7 +218,7 @@ class Client
     /**
      * Get Port
      *
-     * @return string Port
+     * @return int Port
      */
     public function getPort()
     {
@@ -245,16 +248,17 @@ class Client
     /**
      * Increment a metric
      *
-     * @param string|array $metrics    Metric(s) to increment
-     * @param int          $delta      Value to decrement the metric by
-     * @param int          $sampleRate Sample rate of metric
-     * @param array        $tags       List of tags for this metric
+     * @param string|string[] $metrics    Metric(s) to increment
+     * @param int             $delta      Value to decrement the metric by
+     * @param int             $sampleRate Sample rate of metric
+     * @param string[]        $tags       List of tags for this metric
      *
      * @return Client This instance
      */
     public function increment($metrics, $delta = 1, $sampleRate = 1, array $tags = [])
     {
-        $metrics = (array) $metrics;
+        $metrics = is_array($metrics) ? $metrics : [$metrics];
+
         $data = [];
         if ($sampleRate < 1) {
             foreach ($metrics as $metric) {
@@ -273,10 +277,10 @@ class Client
     /**
      * Decrement a metric
      *
-     * @param  string|array $metrics    Metric(s) to decrement
-     * @param  int          $delta      Value to increment the metric by
-     * @param  int          $sampleRate Sample rate of metric
-     * @param  array        $tags       List of tags for this metric
+     * @param string|string[] $metrics    Metric(s) to decrement
+     * @param int             $delta      Value to increment the metric by
+     * @param int             $sampleRate Sample rate of metric
+     * @param string[]        $tags       List of tags for this metric
      *
      * @return Client This instance
      */
@@ -288,11 +292,11 @@ class Client
     /**
      * Timing
      *
-     * @param  string $metric Metric to track
-     * @param  float  $time   Time in milliseconds
-     * @param  array  $tags   List of tags for this metric
+     * @param string   $metric Metric to track
+     * @param float    $time   Time in milliseconds
+     * @param string[] $tags   List of tags for this metric
      *
-     * @return bool True if data transfer is successful
+     * @return Client This instance
      */
     public function timing($metric, $time, array $tags = [])
     {
@@ -307,11 +311,11 @@ class Client
     /**
      * Time a function
      *
-     * @param  string   $metric Metric to time
-     * @param  callable $func   Function to record
-     * @param  array    $tags   List of tags for this metric
+     * @param string   $metric Metric to time
+     * @param callable $func   Function to record
+     * @param string[] $tags   List of tags for this metric
      *
-     * @return bool True if data transfer is successful
+     * @return Client This instance
      */
     public function time($metric, $func, array $tags = [])
     {
@@ -326,9 +330,9 @@ class Client
     /**
      * Gauges
      *
-     * @param  string $metric Metric to gauge
-     * @param  int    $value  Set the value of the gauge
-     * @param  array  $tags   List of tags for this metric
+     * @param string   $metric Metric to gauge
+     * @param int      $value  Set the value of the gauge
+     * @param string[] $tags   List of tags for this metric
      *
      * @return Client This instance
      */
@@ -343,11 +347,11 @@ class Client
     }
 
     /**
-     * Sets - count the number of unique values passed to a key
+     * Sets - count the number of unique elements for a group
      *
-     * @param  string $metric
-     * @param  mixed  $value
-     * @param  array  $tags List of tags for this metric
+     * @param string   $metric
+     * @param int      $value
+     * @param string[] $tags List of tags for this metric
      *
      * @return Client This instance
      */
@@ -366,16 +370,16 @@ class Client
      *
      * @link http://docs.datadoghq.com/guides/dogstatsd/#events
      *
-     * @param  string $title    Event Title
-     * @param  string $text     Event Text
-     * @param  array  $metadata Set of metadata for this event:
-     *                          - time - Assign a timestamp to the event.
-     *                          - hostname - Assign a hostname to the event
-     *                          - key - Assign an aggregation key to th event, to group it with some others
-     *                          - priority - Can be 'normal' or 'low'
-     *                          - source - Assign a source type to the event
-     *                          - alert - Can be 'error', 'warning', 'info' or 'success'
-     * @param  array  $tags     List of tags for this event
+     * @param string   $title     Event Title
+     * @param string   $text      Event Text
+     * @param array    $metadata  Set of metadata for this event:
+     *                            - time - Assign a timestamp to the event.
+     *                            - hostname - Assign a hostname to the event
+     *                            - key - Assign an aggregation key to th event, to group it with some others
+     *                            - priority - Can be 'normal' or 'low'
+     *                            - source - Assign a source type to the event
+     *                            - alert - Can be 'error', 'warning', 'info' or 'success'
+     * @param string[] $tags      List of tags for this event
      *
      * @return Client This instance
      * @throws ConnectionException If there is a connection problem with the host
@@ -409,12 +413,12 @@ class Client
      *
      * @link http://docs.datadoghq.com/guides/dogstatsd/#service-checks
      *
-     * @param string $name     Name of the service
-     * @param int    $status   digit corresponding to the status you’re reporting (OK = 0, WARNING = 1, CRITICAL = 2,
-     *                         UNKNOWN = 3)
-     * @param array  $metadata - time - Assign a timestamp to the service check
-     *                         - hostname - Assign a hostname to the service check
-     * @param array  $tags     List of tags for this event
+     * @param string   $name     Name of the service
+     * @param int      $status   digit corresponding to the status you’re reporting (OK = 0, WARNING = 1, CRITICAL = 2,
+     *                           UNKNOWN = 3)
+     * @param array    $metadata - time - Assign a timestamp to the service check
+     *                           - hostname - Assign a hostname to the service check
+     * @param string[] $tags     List of tags for this event
      *
      * @return Client This instance
      * @throws ConnectionException If there is a connection problem with the host
@@ -446,7 +450,7 @@ class Client
     }
 
     /**
-     * @param array $tags A list of tags to apply to each message
+     * @param string[] $tags A list of tags to apply to each message
      *
      * @return string
      */
@@ -471,8 +475,8 @@ class Client
     /**
      * Send Data to StatsD Server
      *
-     * @param  array $data A list of messages to send to the server
-     * @param  array $tags A list of tags to apply to each message
+     * @param string[] $data A list of messages to send to the server
+     * @param string[] $tags A list of tags to apply to each message
      *
      * @return Client This instance
      * @throws ConnectionException If there is a connection problem with the host
@@ -481,7 +485,7 @@ class Client
     {
         $messages = array();
         $prefix = $this->namespace ? $this->namespace . '.' : '';
-        $formattedTags = $this->formatTags($tags);
+        $formattedTags = $this->formatTags(array_merge($this->tags, $tags));
         foreach ($data as $key => $value) {
             $messages[] = $prefix . $key . ':' . $value . $formattedTags;
         }
@@ -489,7 +493,7 @@ class Client
     }
 
     /**
-     * @param array $messages
+     * @param string[] $messages
      *
      * @return Client This instance
      * @throws ConnectionException If there is a connection problem with the host
@@ -498,14 +502,14 @@ class Client
     {
         $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
         if (!$socket) {
-            if ($this->throwConnectionExceptions) {
+            if ($this->throwExceptions) {
                 throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
             } else {
                 trigger_error(
                     sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
                     E_USER_WARNING
                 );
-                return;
+                return $this;
             }
         }
         $this->message = implode("\n", $messages);

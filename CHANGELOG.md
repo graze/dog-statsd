@@ -2,22 +2,16 @@
 
 All Notable changes to `graze/dog-statsd` will be documented in this file
 
-## [Version] - YYYY-MM-DD
+## v0.2 - 2016-03-02
 
 ### Added
-- Nothing
+- Added default tags to be sent with every request
+- Added a Dockerfile
 
 ### Changed
-- Nothing
+- Renamed the option `throwConnectionExceptions` to `throwExceptions`
 
-### Fixed
-- Nothing
+## v0.1 - 2015-11-04
 
-### Deprecated
-- Nothing
-
-### Removed
-- Nothing
-
-### Security
-- Nothing
+### Added
+- Initial release

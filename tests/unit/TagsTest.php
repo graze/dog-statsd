@@ -26,12 +26,19 @@ class TagsTest extends TestCase
 
     public function testCoreStatsDImplementation()
     {
-        $this->client->configure(array(
-            'host' => '127.0.0.1',
-            'port' => 8125,
-            'dataDog' => false
-        ));
+        $this->client->configure([
+            'dataDog' => false,
+        ]);
         $this->client->increment('test_metric', 1, 1, ['tag']);
         $this->assertEquals('test_metric:1|c', $this->client->getLastMessage());
+    }
+
+    public function testDefaultTagsGetAddedToRequest()
+    {
+        $this->client->configure([
+            'tags' => ['tag1'],
+        ]);
+        $this->client->increment('test_metric', 1, 1, ['tag2']);
+        $this->assertEquals('test_metric:1|c|#tag1,tag2', $this->client->getLastMessage());
     }
 }
