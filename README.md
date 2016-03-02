@@ -1,5 +1,7 @@
 # graze/dog-statsd
 
+![Giphy](http://media1.giphy.com/media/ALCI3eTii7qOk/giphy.gif)
+
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/graze/dog-statsd.svg?style=flat-square)](https://packagist.org/packages/graze/dog-statsd)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://img.shields.io/travis/graze/dog-statsd/master.svg?style=flat-square)](https://travis-ci.org/graze/dog-statsd)
