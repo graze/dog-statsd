@@ -3,6 +3,8 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/graze/dog-statsd.svg?style=flat-square)](https://packagist.org/packages/graze/dog-statsd)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Build Status](https://img.shields.io/travis/graze/dog-statsd/master.svg?style=flat-square)](https://travis-ci.org/graze/dog-statsd)
+[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/graze/dog-statsd.svg?style=flat-square)](https://scrutinizer-ci.com/g/graze/dog-statsd/code-structure)
+[![Quality Score](https://img.shields.io/scrutinizer/g/graze/dog-statsd.svg?style=flat-square)](https://scrutinizer-ci.com/g/graze/dog-statsd)
 [![Total Downloads](https://img.shields.io/packagist/dt/graze/dog-statsd.svg?style=flat-square)](https://packagist.org/packages/graze/dog-statsd)
 
 Client to talk to [DataDogs StatsD Agent](http://docs.datadoghq.com/guides/dogstatsd) Forked from:
@@ -22,11 +24,11 @@ $ composer require graze/dog-statsd
 
 ```php
 $statsd = new Graze\DogStatsD\Client();
-$statsd->configure(array(
+$statsd->configure([
     'host' => '127.0.0.1',
     'port' => 8125,
     'namespace' => 'example'
-));
+]);
 ```
 
 OR
@@ -37,20 +39,21 @@ $statsd2 = DogStatsD\Client::instance('server2')->configure(array(...));
 ```
 
 The StatsD client waits for `ini_get('default_socket_timeout')` seconds when opening the socket by default. To reduce
-this timeout, add `'timeout' => <float>` to your config.
+this timeout, add `'timeout' => <int>` to your config.
 
 The StatsD client will throw a `ConnectionException` if it is unable to send data to the StatsD server. You may choose
 to disable these exceptions and log a PHP warning instead if you wish. To do so, include the following in your config:
 
 ```
-    'throwConnectionExceptions' => false
+    'throwExceptions' => false
 ```
 
 If omitted, this option defaults to `true`.
 
 #### Core StatsD implementation
 
-To use this with a core statsd implementation include the following in your configuration:
+To use this with a core statsd implementation (without the extra features DataDog have added) include the following in
+your configuration:
 ```
 'dataDog' => false
 ```
@@ -112,7 +115,7 @@ $statsd->event(
     'build.success',
     'The build super_awesome_application_build_1 has completed',
     [
-        'time' => time()
+        'time' => time(),
         'alert' => Client::ALERT_SUCCESS,
     ],
     [
@@ -149,7 +152,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Security
 
-If you discover any security related issues, please email harry.bragg@graze.com instead of using the issue tracker.
+If you discover any security related issues, please email security@graze.com instead of using the issue tracker.
 
 ## Credits
 
