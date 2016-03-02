@@ -31,8 +31,8 @@ class ConnectionTest extends TestCase
     public function testCanBeConfiguredNotToThrowConnectionExceptions()
     {
         $this->client->configure(array(
-            'host'                      => 'hostdoesnotexiststalleverlol.stupidtld',
-            'throwConnectionExceptions' => false,
+            'host'            => 'hostdoesnotexiststalleverlol.stupidtld',
+            'throwExceptions' => false,
         ));
         $handlerInvoked = false;
 
@@ -60,6 +60,6 @@ class ConnectionTest extends TestCase
 
     public function testTimeoutDefaultsToPhpIniDefaultSocketTimeout()
     {
-        $this->assertAttributeSame(ini_get('default_socket_timeout'), 'timeout', $this->client);
+        $this->assertAttributeEquals(ini_get('default_socket_timeout'), 'timeout', $this->client);
     }
 }

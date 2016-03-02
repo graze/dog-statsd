@@ -9,11 +9,16 @@ php:
 matrix:
   allow_failures:
     - php: 7.0
+    - php: hhvm
 
 before_script:
   - travis_retry composer self-update
-  - travis_retry composer install --no-interaction --prefer-source
+  - travis_retry composer update --no-interaction --prefer-source
 
 script:
-  - make test
-  - make lint
+  - composer lint
+  - composer test:coverage-clover
+
+after_script:
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover ./tests/report/coverage.clover

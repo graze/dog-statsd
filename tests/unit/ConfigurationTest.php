@@ -6,6 +6,14 @@ use Graze\DogStatsD\Test\TestCase;
 
 class ConfigurationTest extends TestCase
 {
+    public function testHost()
+    {
+        $this->client->configure([
+            'host' => '127.0.0.1'
+        ]);
+        $this->assertEquals('127.0.0.1', $this->client->getHost());
+    }
+
     /**
      * Large ports should be out of range
      *

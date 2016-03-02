@@ -6,7 +6,7 @@ We accept contributions via Pull Requests on [Github](https://github.com/graze/d
 
 ## Reporting an Issue
 
-Please report issues via the issue tracker on GitHub. For security-related issues, please email the maintainer directly.
+Please report issues via the issue tracker on GitHub. For security-related issues, please email security@graze.com.
 
 ## Pull Requests
 
@@ -21,14 +21,14 @@ made them including any relevant information or justifications that will aid the
 
 ## Development Environment
 
-If you need a vagrant box for development, we recommend using [adlawson/vagrantfiles](https://github.com/adlawson/vagrantfiles), for PHP:
+A Dockerfile is included in this repository for development. All make commands use the docker container to run the code.
+An initial setup will need to be run to install the environment:
 
 ```shell
-$ curl -O https://raw.githubusercontent.com/adlawson/vagrantfiles/master/php/Vagrantfile
-$ vagrant up
-$ vagrant ssh
-$ cd /srv
+$ make
 ```
+
+A complete list of commands can be found by running: `$ make help`
 
 ## Running Tests
 
@@ -42,11 +42,13 @@ Or run individual suites using:
 
 ```shell
 $ make test-unit
+$ make test-matrix
 ```
 
-You can get a coverage report in text and HTML by running:
+You can get a coverage report in text, HTML and clover XML by running:
 
 ```shell
 $ make test-coverage
-$ make test-unit-coverage
+$ make test-coverage-html
+$ make test-coverage-clover
 ```
