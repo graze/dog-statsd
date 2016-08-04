@@ -67,10 +67,10 @@ your configuration:
 ```php
 $statsd->increment('web.pageview');
 $statsd->decrement('storage.remaining');
-$statsd->increment(array(
+$statsd->increment([
     'first.metric',
     'second.metric'
-), 2);
+], 2);
 $statsd->increment('web.clicks', 1, 0.5);
 ```
 
@@ -117,7 +117,7 @@ $statsd->event(
     'build.success',
     'The build super_awesome_application_build_1 has completed',
     [
-        'time' => time(),
+        'time'  => time(),
         'alert' => Client::ALERT_SUCCESS,
     ],
     [
@@ -150,7 +150,7 @@ Send the same base tags with every request
 $client = new Client();
 $client->configure([
     'tags' => [
-        'env'     =>'live',
+        'env'     => 'live',
         'release' => 'app-2.3.1',
     ],
 ]);
