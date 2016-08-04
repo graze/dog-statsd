@@ -9,7 +9,7 @@ class ConfigurationTest extends TestCase
     public function testHost()
     {
         $this->client->configure([
-            'host' => '127.0.0.1'
+            'host' => '127.0.0.1',
         ]);
         $this->assertEquals('127.0.0.1', $this->client->getHost());
     }
@@ -21,11 +21,10 @@ class ConfigurationTest extends TestCase
      */
     public function testLargePort()
     {
-        $this->client->configure(array(
+        $this->client->configure([
             'port' => 65536,
-        ));
+        ]);
     }
-
 
     /**
      * Non-integer ports are not acceptable
@@ -34,11 +33,10 @@ class ConfigurationTest extends TestCase
      */
     public function testStringPort()
     {
-        $this->client->configure(array(
+        $this->client->configure([
             'port' => 'not-integer',
-        ));
+        ]);
     }
-
 
     /**
      * Default Port
@@ -48,15 +46,14 @@ class ConfigurationTest extends TestCase
         $this->assertEquals($this->client->getPort(), 8125);
     }
 
-
     /**
      * Valid Port
      */
     public function testValidPort()
     {
-        $this->client->configure(array(
+        $this->client->configure([
             'port' => 1234,
-        ));
+        ]);
         $this->assertEquals($this->client->getPort(), 1234);
     }
 }

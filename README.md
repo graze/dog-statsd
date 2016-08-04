@@ -29,15 +29,15 @@ $statsd = new Graze\DogStatsD\Client();
 $statsd->configure([
     'host' => '127.0.0.1',
     'port' => 8125,
-    'namespace' => 'example'
+    'namespace' => 'example',
 ]);
 ```
 
 OR
 
 ```php
-$statsd1 = DogStatsD\Client::instance('server1')->configure(array(...));
-$statsd2 = DogStatsD\Client::instance('server2')->configure(array(...));
+$statsd1 = DogStatsD\Client::instance('server1')->configure([...]);
+$statsd2 = DogStatsD\Client::instance('server2')->configure([...]);
 ```
 
 The StatsD client waits for `ini_get('default_socket_timeout')` seconds when opening the socket by default. To reduce
@@ -140,6 +140,20 @@ $statsd->serviceCheck(
         'environement' => 'staging',
     ]
 );
+```
+
+#### Default Tags
+
+Send the same base tags with every request
+
+```php
+$client = new Client();
+$client->configure([
+    'tags' => [
+        'env'     =>'live',
+        'release' => 'app-2.3.1',
+    ],
+]);
 ```
 
 ## Testing

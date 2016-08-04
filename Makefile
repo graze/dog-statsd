@@ -15,7 +15,7 @@ DOCKER_RUN := ${DOCKER} run --rm -t ${VOLUME_MAP} ${DOCKER_REPOSITORY}:latest
 
 install: ## Download the dependencies then build the image :rocket:.
 	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
-	$(DOCKER) build --tag ${DOCKER_REPOSITORY}:latest .
+	${DOCKER} build --tag ${DOCKER_REPOSITORY}:latest .
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
@@ -25,10 +25,7 @@ composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
         graze/composer --ansi --no-interaction $* $(filter-out $@,$(MAKECMDGOALS))
 
 clean: ## Clean up any images.
-	$(DOCKER) rmi ${DOCKER_REPOSITORY}:latest
-
-run: ## Run a command on the docker image
-	$(DOCKER_RUN) $(filter-out $@,$(MAKECMDGOALS))
+	${DOCKER} rmi ${DOCKER_REPOSITORY}:latest
 
 
 # Testing
@@ -37,13 +34,13 @@ test: ## Run the unit and integration testsuites.
 test: lint test-unit
 
 lint: ## Run phpcs against the code.
-	$(DOCKER_RUN) composer lint --ansi
+	${DOCKER_RUN} vendor/bin/phpcs -p --warning-severity=0 src/ tests/
 
 lint-fix: ## Run phpcsf and fix possible lint errors.
-	$(DOCKER_RUN) composer lint:auto-fix --ansi
+	${DOCKER_RUN} vendor/bin/phpcbf -p src/ tests/
 
 test-unit: ## Run the unit testsuite.
-	$(DOCKER_RUN) composer test:unit --ansi
+	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite unit
 
 test-matrix: ## Run the unit tests against multiple targets.
 	${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME} php:5.6-cli \
@@ -54,13 +51,13 @@ test-matrix: ## Run the unit tests against multiple targets.
     vendor/bin/phpunit --testsuite unit
 
 test-coverage: ## Run all tests and output coverage to the console.
-	$(DOCKER_RUN) composer test:coverage --ansi
+	${DOCKER_RUN} vendor/bin/phpunit --coverage-text
 
 test-coverage-html: ## Run all tests and output coverage to html.
-	$(DOCKER_RUN) composer test:coverage-html --ansi
+	${DOCKER_RUN} vendor/bin/phpunit --coverage-html=./tests/report/html
 
 test-coverage-clover: ## Run all tests and output clover coverage to file.
-	$(DOCKER_RUN) composer test:coverage-clover --ansi
+	${DOCKER_RUN} vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
 
 
 # Help

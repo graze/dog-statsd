@@ -28,7 +28,7 @@ class Client
      *
      * @var array
      */
-    protected static $instances = array();
+    protected static $instances = [];
 
     /**
      * Instance ID
@@ -317,15 +317,14 @@ class Client
      *
      * @return Client This instance
      */
-    public function time($metric, $func, array $tags = [])
+    public function time($metric, callable $func, array $tags = [])
     {
-        $timer_start = microtime(true);
+        $timerStart = microtime(true);
         $func();
-        $timer_end = microtime(true);
-        $time = round(($timer_end - $timer_start) * 1000, 4);
+        $timerEnd = microtime(true);
+        $time = round(($timerEnd - $timerStart) * 1000, 4);
         return $this->timing($metric, $time, $tags);
     }
-
 
     /**
      * Gauges
@@ -483,7 +482,7 @@ class Client
      */
     protected function send(array $data, array $tags = [])
     {
-        $messages = array();
+        $messages = [];
         $prefix = $this->namespace ? $this->namespace . '.' : '';
         $formattedTags = $this->formatTags(array_merge($this->tags, $tags));
         foreach ($data as $key => $value) {

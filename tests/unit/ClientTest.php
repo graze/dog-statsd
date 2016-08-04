@@ -14,7 +14,6 @@ class ClientTest extends TestCase
         $this->assertRegExp('/^DogStatsD\\\Client::\[[a-zA-Z0-9]+\]$/', (String) $client);
     }
 
-
     public function testStaticInstance()
     {
         $client1 = Client::instance('instance1');

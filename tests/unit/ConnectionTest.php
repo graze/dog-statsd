@@ -13,27 +13,27 @@ class ConnectionTest extends TestCase
      */
     public function testInvalidHost()
     {
-        $this->client->configure(array(
+        $this->client->configure([
             'host' => 'hostdoesnotexiststalleverlol.stupidtld',
-        ));
+        ]);
         $this->client->increment('test');
     }
 
     public function testTimeoutSettingIsUsedWhenCreatingSocketIfProvided()
     {
-        $this->client->configure(array(
+        $this->client->configure([
             'host'    => 'localhost',
             'timeout' => 123,
-        ));
+        ]);
         $this->assertAttributeSame(123, 'timeout', $this->client);
     }
 
     public function testCanBeConfiguredNotToThrowConnectionExceptions()
     {
-        $this->client->configure(array(
+        $this->client->configure([
             'host'            => 'hostdoesnotexiststalleverlol.stupidtld',
             'throwExceptions' => false,
-        ));
+        ]);
         $handlerInvoked = false;
 
         $testCase = $this;

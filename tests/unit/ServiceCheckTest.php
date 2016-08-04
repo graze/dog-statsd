@@ -65,11 +65,11 @@ class ServiceCheckTest extends TestCase
 
     public function testCoreStatsDImplementation()
     {
-        $this->client->configure(array(
-            'host' => '127.0.0.1',
-            'port' => 8125,
-            'dataDog' => false
-        ));
+        $this->client->configure([
+            'host'    => '127.0.0.1',
+            'port'    => 8125,
+            'dataDog' => false,
+        ]);
         $this->client->serviceCheck('service.api', Client::STATUS_OK);
         $this->assertEquals('', $this->client->getLastMessage());
     }
