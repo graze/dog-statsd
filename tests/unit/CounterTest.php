@@ -12,13 +12,11 @@ class CounterTest extends TestCase
         $this->assertEquals('test_metric:1|c', $this->client->getLastMessage());
     }
 
-
     public function testIncrementDelta()
     {
         $this->client->increment('test_metric', 2);
         $this->assertEquals('test_metric:2|c', $this->client->getLastMessage());
     }
-
 
     public function testIncrementSample()
     {
@@ -28,13 +26,11 @@ class CounterTest extends TestCase
         $this->assertEquals('test_metric:1|c|@0.75', $this->client->getLastMessage());
     }
 
-
     public function testDecrement()
     {
         $this->client->decrement('test_metric');
         $this->assertEquals('test_metric:-1|c', $this->client->getLastMessage());
     }
-
 
     public function testDecrementDelta()
     {
