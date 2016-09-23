@@ -19,10 +19,10 @@ class HistogramTest extends TestCase
 {
     public function testIncrement()
     {
-        $this->client->histogram('test_metric',10);
+        $this->client->histogram('test_metric', 10);
         $this->assertEquals('test_metric:10|h', $this->client->getLastMessage());
 
-        $this->client->histogram('test_metric',1.2);
+        $this->client->histogram('test_metric', 1.2);
         $this->assertEquals('test_metric:1.2|h', $this->client->getLastMessage());
     }
 }
