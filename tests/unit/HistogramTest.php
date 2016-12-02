@@ -17,12 +17,33 @@ use Graze\DogStatsD\Test\TestCase;
 
 class HistogramTest extends TestCase
 {
-    public function testIncrement()
+    public function testHistogram()
     {
         $this->client->histogram('test_metric', 10);
         $this->assertEquals('test_metric:10|h', $this->client->getLastMessage());
 
         $this->client->histogram('test_metric', 1.2);
         $this->assertEquals('test_metric:1.2|h', $this->client->getLastMessage());
+    }
+
+    public function testHistogramSample()
+    {
+        $this->client->histogram('test_metric', 5, 0.75);
+        $this->assertEquals('test_metric:5|h|@0.75', $this->client->getLastMessage());
+    }
+
+    public function testHistogramTags()
+    {
+        $this->client->histogram('test_metric', 10, 1.0, []);
+        $this->assertEquals('test_metric:10|h', $this->client->getLastMessage());
+
+        $this->client->histogram('test_metric', 10, 1.0, ['tag1']);
+        $this->assertEquals('test_metric:10|h|#tag1', $this->client->getLastMessage());
+
+        $this->client->histogram('test_metric', 10, 1.0, ['tag1', 'tag2']);
+        $this->assertEquals('test_metric:10|h|#tag1,tag2', $this->client->getLastMessage());
+
+        $this->client->histogram('test_metric', 10, 1.0, ['tag1', 'tag1']);
+        $this->assertEquals('test_metric:10|h|#tag1,tag1', $this->client->getLastMessage());
     }
 }
