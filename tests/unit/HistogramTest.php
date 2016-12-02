@@ -28,7 +28,9 @@ class HistogramTest extends TestCase
 
     public function testHistogramSample()
     {
-        $this->client->histogram('test_metric', 5, 0.75);
+        while ($this->client->getLastMessage() === '') {
+            $this->client->histogram('test_metric', 5, 0.75);
+        }
         $this->assertEquals('test_metric:5|h|@0.75', $this->client->getLastMessage());
     }
 
