@@ -261,17 +261,17 @@ class Client
      *
      * @param string|string[] $metrics    Metric(s) to increment
      * @param int             $delta      Value to decrement the metric by
-     * @param int             $sampleRate Sample rate of metric
+     * @param float           $sampleRate Sample rate of metric
      * @param string[]        $tags       List of tags for this metric
      *
      * @return Client This instance
      */
-    public function increment($metrics, $delta = 1, $sampleRate = 1, array $tags = [])
+    public function increment($metrics, $delta = 1, $sampleRate = 1.0, array $tags = [])
     {
         $metrics = is_array($metrics) ? $metrics : [$metrics];
 
         $data = [];
-        if ($sampleRate < 1) {
+        if ($sampleRate < 1.0) {
             foreach ($metrics as $metric) {
                 if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
                     $data[$metric] = $delta . '|c|@' . $sampleRate;
@@ -354,6 +354,30 @@ class Client
             ],
             $tags
         );
+    }
+
+    /**
+     * Histogram
+     *
+     * @param string   $metric     Metric to send
+     * @param float    $value      Value to send
+     * @param float    $sampleRate Sample rate of metric
+     * @param string[] $tags       List of tags for this metric
+     *
+     * @return Client This instance
+     */
+    public function histogram($metric, $value, $sampleRate = 1.0, array $tags = [])
+    {
+        $data = [];
+        if ($sampleRate < 1.0) {
+            if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
+                $data[$metric] = $value . '|h|@' . $sampleRate;
+            }
+        } else {
+            $data[$metric] = $value . '|h';
+        }
+
+        return $this->send($data, $tags);
     }
 
     /**
