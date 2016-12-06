@@ -12,6 +12,8 @@
 Client to talk to [DataDogs StatsD Agent](http://docs.datadoghq.com/guides/dogstatsd) Forked from:
 [League/StatsD](https://github.com/thephpleague/statsd)
 
+For more information on the metric, see: [Datadogs metrics guide](http://docs.datadoghq.com/guides/metrics/).
+
 ## Install
 
 Via Composer
@@ -85,6 +87,13 @@ $statsd->gauge('api.logged_in_users', 123456);
 ```php
 $userID = 23;
 $statsd->set('api.unique_logins', $userID);
+```
+
+#### Histogram
+
+```php
+$result = $db->fetch();
+$statsd->histogram('db.results', count($result), 0.5);
 ```
 
 #### Timers

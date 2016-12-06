@@ -1,10 +1,11 @@
 SHELL = /bin/sh
 
 DOCKER ?= $(shell which docker)
-DOCKER_REPOSITORY := graze/dog-statsd
+DOCKER_REPOSITORY := graze/php-alpine
 VOLUME := /opt/graze/dog-statsd
 VOLUME_MAP := -v $$(pwd):${VOLUME}
-DOCKER_RUN := ${DOCKER} run --rm -t ${VOLUME_MAP} ${DOCKER_REPOSITORY}:latest
+DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}
+DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}:test
 
 .PHONY: install composer clean help run
 .PHONY: test lint lint-fix test-unit test-integration test-matrix test-coverage test-coverage-html test-coverage-clover
@@ -15,7 +16,6 @@ DOCKER_RUN := ${DOCKER} run --rm -t ${VOLUME_MAP} ${DOCKER_REPOSITORY}:latest
 
 install: ## Download the dependencies then build the image :rocket:.
 	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
-	${DOCKER} build --tag ${DOCKER_REPOSITORY}:latest .
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
@@ -25,7 +25,7 @@ composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
         graze/composer --ansi --no-interaction $* $(filter-out $@,$(MAKECMDGOALS))
 
 clean: ## Clean up any images.
-	${DOCKER} rmi ${DOCKER_REPOSITORY}:latest
+	${DOCKER} rmi ${DOCKER_REPOSITORY}
 
 
 # Testing
@@ -43,21 +43,18 @@ test-unit: ## Run the unit testsuite.
 	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite unit
 
 test-matrix: ## Run the unit tests against multiple targets.
-	${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME} php:5.6-cli \
-    vendor/bin/phpunit --testsuite unit
-	${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME} php:7.0-cli \
-    vendor/bin/phpunit --testsuite unit
-	${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME} diegomarangoni/hhvm:cli \
-    vendor/bin/phpunit --testsuite unit
+	make DOCKER_RUN="${DOCKER_RUN_BASE} php:5.6-cli" test
+	make DOCKER_RUN="${DOCKER_RUN_BASE} php:7.0-cli" test
+	make DOCKER_RUN="${DOCKER_RUN_BASE} diegomarangoni/hhvm:cli" test
 
 test-coverage: ## Run all tests and output coverage to the console.
-	${DOCKER_RUN} vendor/bin/phpunit --coverage-text
+	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-text
 
 test-coverage-html: ## Run all tests and output coverage to html.
-	${DOCKER_RUN} vendor/bin/phpunit --coverage-html=./tests/report/html
+	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-html=./tests/report/html
 
 test-coverage-clover: ## Run all tests and output clover coverage to file.
-	${DOCKER_RUN} vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
 
 
 # Help
