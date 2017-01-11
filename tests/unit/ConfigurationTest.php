@@ -26,28 +26,34 @@ class ConfigurationTest extends TestCase
         $this->assertEquals('127.0.0.1', $this->client->getHost());
     }
 
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: host is expected to be: 'string', was: 'integer'
+     */
     public function testHostInvalidTypeWillThrowAnException()
     {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Option: host is expected to be: 'string', was: 'integer'");
         $this->client->configure([
             'host' => 12434,
         ]);
     }
 
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: Port is out of range
+     */
     public function testLargePortWillThrowAnException()
     {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Option: Port is out of range");
         $this->client->configure([
             'port' => 65536,
         ]);
     }
 
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: port is expected to be: 'integer', was: 'string'
+     */
     public function testStringPortWillThrowAnException()
     {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Option: port is expected to be: 'integer', was: 'string'");
         $this->client->configure([
             'port' => 'not-integer',
         ]);
@@ -66,37 +72,45 @@ class ConfigurationTest extends TestCase
         $this->assertEquals($this->client->getPort(), 1234);
     }
 
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: namespace is expected to be: 'string', was: 'integer'
+     */
     public function testInvalidNamespace()
     {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Option: namespace is expected to be: 'string', was: 'integer'");
         $this->client->configure([
             'namespace' => 12345,
         ]);
     }
 
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: throwExceptions is expected to be: 'boolean', was: 'string'
+     */
     public function testInvalidThrowAnException()
     {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Option: throwExceptions is expected to be: 'boolean', was: 'string'");
         $this->client->configure([
             'throwExceptions' => 'fish',
         ]);
     }
 
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: dataDog is expected to be: 'boolean', was: 'string'
+     */
     public function testInvalidDataDogThrowAnException()
     {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Option: dataDog is expected to be: 'boolean', was: 'string'");
         $this->client->configure([
             'dataDog' => 'invalid',
         ]);
     }
 
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: tags is expected to be: 'array', was: 'string'
+     */
     public function testInvalidTagsThrowsAnException()
     {
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Option: tags is expected to be: 'array', was: 'string'");
         $this->client->configure([
             'tags' => 'tag,tag2',
         ]);
