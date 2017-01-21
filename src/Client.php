@@ -195,22 +195,30 @@ class Client
      */
     public function configure(array $options = [])
     {
-        $setOption = function ($name) use ($options) {
+        $setOption = function ($name, $type = null) use ($options) {
             if (isset($options[$name])) {
+                if (!is_null($type) && (gettype($options[$name]) != $type)) {
+                    throw new ConfigurationException($this, sprintf(
+                        "Option: %s is expected to be: '%s', was: '%s'",
+                        $name,
+                        $type,
+                        gettype($options[$name])
+                    ));
+                }
                 $this->{$name} = $options[$name];
             }
         };
 
-        $setOption('host');
-        $setOption('port');
-        $setOption('namespace');
+        $setOption('host', 'string');
+        $setOption('port', 'integer');
+        $setOption('namespace', 'string');
         $setOption('timeout');
-        $setOption('throwExceptions');
-        $setOption('dataDog');
-        $setOption('tags');
+        $setOption('throwExceptions', 'boolean');
+        $setOption('dataDog', 'boolean');
+        $setOption('tags', 'array');
 
         if (!$this->port || !is_numeric($this->port) || $this->port > 65535) {
-            throw new ConfigurationException($this, 'Port is out of range');
+            throw new ConfigurationException($this, 'Option: Port is out of range');
         }
 
         return $this;
