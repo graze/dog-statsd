@@ -39,6 +39,7 @@ test-unit: ## Run the unit testsuite.
 	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite unit
 
 test-matrix: ## Run the unit tests against multiple targets.
+	make DOCKER_REPOSITORY="php:5.5-alpine" test
 	make DOCKER_REPOSITORY="php:5.6-alpine" test
 	make DOCKER_REPOSITORY="php:7.0-alpine" test
 	make DOCKER_REPOSITORY="php:7.1-alpine" test
