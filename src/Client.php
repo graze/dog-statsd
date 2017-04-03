@@ -107,6 +107,7 @@ class Client
         'priority' => 'p',
         'source'   => 's',
         'alert'    => 't',
+        'aggregation_key' => 'k',
     ];
 
     /**
