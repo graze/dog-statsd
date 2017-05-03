@@ -95,7 +95,7 @@ class Client
      *
      * @var resource|null
      */
-    protected $socket;
+    protected $socket = null;
 
     /**
      * Metadata for the DataDog event message
@@ -549,31 +549,45 @@ class Client
      */
     protected function sendMessages(array $messages)
     {
-        if($this->socket === null) {
-            $this->socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
-            if (!$this->socket) {
-                if ($this->throwExceptions) {
-                    throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
-                } else {
-                    trigger_error(
-                        sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
-                        E_USER_WARNING
-                    );
-                }
+        if (is_null($this->socket)) {
+            $this->socket = $this->connect();
+        }
+        if ($this->socket) {
+            $this->message = implode("\n", $messages);
+            if (@fwrite($this->socket, $this->message) === false) {
+                // attempt to re-send on socket resource failure
+                $this->socket = $this->connect();
+                @fwrite($this->socket, $this->message);
             }
         }
-        
-        if($this->socket) {
-            $this->message = implode("\n", $messages);
-            @fwrite($socket, $this->message);
-        }
-        
+
         return $this;
     }
-    
+
+    /**
+     * Creates a persistent connection to the udp host:port
+     *
+     * @return resource
+     */
+    protected function connect()
+    {
+        $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
+        if ($socket === false) {
+            if ($this->throwExceptions) {
+                throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
+            } else {
+                trigger_error(
+                    sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
+                    E_USER_WARNING
+                );
+            }
+        }
+        return $socket;
+    }
+
     public function __destruct()
     {
-        if($this->socket) {
+        if ($this->socket) {
             fclose($this->socket);
         }
     }
