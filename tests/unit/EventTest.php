@@ -30,16 +30,17 @@ class EventTest extends TestCase
             'some_title',
             'textAndThings',
             [
-                'time'     => 12345678,
-                'hostname' => 'some.host',
-                'key'      => 'someKey',
-                'priority' => Client::PRIORITY_LOW,
-                'source'   => 'space',
-                'alert'    => Client::ALERT_INFO,
+                'time'        => 12345678,
+                'hostname'    => 'some.host',
+                'key'         => 'someKey',
+                'priority'    => Client::PRIORITY_LOW,
+                'source'      => 'space',
+                'alert'       => Client::ALERT_INFO,
+                'aggregation' => 'grouping',
             ]
         );
         $this->assertEquals(
-            '_e{10,13}:some_title|textAndThings|d:12345678|h:some.host|k:someKey|p:low|s:space|t:info',
+            '_e{10,13}:some_title|textAndThings|d:12345678|h:some.host|k:someKey|p:low|s:space|t:info|k:grouping',
             $this->client->getLastMessage()
         );
     }
