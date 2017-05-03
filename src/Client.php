@@ -582,6 +582,7 @@ class Client
                 );
             }
         }
+        stream_set_timeout($socket, $this->timeout);
         return $socket;
     }
 
