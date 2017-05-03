@@ -91,6 +91,13 @@ class Client
     protected $throwExceptions = true;
 
     /**
+     * Socket connection
+     *
+     * @var resource|null
+     */
+    protected $socket;
+
+    /**
      * Metadata for the DataDog event message
      *
      * @var array - time - Assign a timestamp to the event.
@@ -542,21 +549,32 @@ class Client
      */
     protected function sendMessages(array $messages)
     {
-        $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
-        if (!$socket) {
-            if ($this->throwExceptions) {
-                throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
-            } else {
-                trigger_error(
-                    sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
-                    E_USER_WARNING
-                );
-                return $this;
+        if($this->socket === null) {
+            $this->socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
+            if (!$this->socket) {
+                if ($this->throwExceptions) {
+                    throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
+                } else {
+                    trigger_error(
+                        sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
+                        E_USER_WARNING
+                    );
+                }
             }
         }
-        $this->message = implode("\n", $messages);
-        @fwrite($socket, $this->message);
-        fclose($socket);
+        
+        if($this->socket) {
+            $this->message = implode("\n", $messages);
+            @fwrite($socket, $this->message);
+        }
+        
         return $this;
+    }
+    
+    public function __destruct()
+    {
+        if($this->socket) {
+            fclose($this->socket);
+        }
     }
 }
