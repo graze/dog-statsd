@@ -99,15 +99,16 @@ class Client
      *            - priority - Can be 'normal' or 'low'
      *            - source - Assign a source type to the event
      *            - alert - Can be 'error', 'warning', 'info' or 'success'
+     *            - aggregation - Assign an aggregation key to the event, to group it with some others.
      */
     protected $eventMetaData = [
-        'time'     => 'd',
-        'hostname' => 'h',
-        'key'      => 'k',
-        'priority' => 'p',
-        'source'   => 's',
-        'alert'    => 't',
-        'aggregation_key' => 'k',
+        'time'        => 'd',
+        'hostname'    => 'h',
+        'key'         => 'k',
+        'priority'    => 'p',
+        'source'      => 's',
+        'alert'       => 't',
+        'aggregation' => 'k',
     ];
 
     /**
