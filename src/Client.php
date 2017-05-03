@@ -171,7 +171,7 @@ class Client
         $this->instanceId = $instanceId ?: uniqid();
 
         if (empty($this->timeout)) {
-            $this->timeout = (int) ini_get('default_socket_timeout');
+            $this->timeout = (float) ini_get('default_socket_timeout');
         }
     }
 
@@ -192,7 +192,7 @@ class Client
      *                       :host <string|ip> - host to talk to
      *                       :port <int> - Port to communicate with
      *                       :namespace <string> - Default namespace
-     *                       :timeout <int> - Timeout in seconds
+     *                       :timeout <float> - Timeout in seconds
      *                       :throwExceptions <bool> - Throw an exception on connection error
      *                       :dataDog <bool> - Use DataDog's version of statsd (Default: true)
      *                       :tags <array> - List of tags to add to each message
@@ -573,6 +573,7 @@ class Client
     {
         $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
         if ($socket === false) {
+            $socket = null;
             if ($this->throwExceptions) {
                 throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
             } else {
@@ -581,8 +582,10 @@ class Client
                     E_USER_WARNING
                 );
             }
+        } else {
+            list ($sec, $ms) = sscanf($this->timeout, '%d.%d');
+            stream_set_timeout($socket, $sec, $ms);
         }
-        stream_set_timeout($socket, $this->timeout);
         return $socket;
     }
 
