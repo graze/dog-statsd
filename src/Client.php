@@ -79,7 +79,7 @@ class Client
     /**
      * Timeout for creating the socket connection
      *
-     * @var null|int
+     * @var null|float
      */
     protected $timeout;
 
@@ -286,16 +286,8 @@ class Client
         $metrics = is_array($metrics) ? $metrics : [$metrics];
 
         $data = [];
-        if ($sampleRate < 1.0) {
-            foreach ($metrics as $metric) {
-                if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
-                    $data[$metric] = $delta . '|c|@' . $sampleRate;
-                }
-            }
-        } else {
-            foreach ($metrics as $metric) {
-                $data[$metric] = $delta . '|c';
-            }
+        foreach ($metrics as $metric) {
+            $data[$metric] = $delta . '|c' . $this->sample($sampleRate);
         }
         return $this->send($data, $tags);
     }
@@ -384,14 +376,7 @@ class Client
     public function histogram($metric, $value, $sampleRate = 1.0, array $tags = [])
     {
         $data = [];
-        if ($sampleRate < 1.0) {
-            if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
-                $data[$metric] = $value . '|h|@' . $sampleRate;
-            }
-        } else {
-            $data[$metric] = $value . '|h';
-        }
-
+        $data[$metric] = $value . '|h' . $this->sample($sampleRate);
         return $this->send($data, $tags);
     }
 
@@ -496,6 +481,19 @@ class Client
         return $this->sendMessages([
             $value,
         ]);
+    }
+
+    /**
+     * @param float $rate
+     *
+     * @return string
+     */
+    private function sample($rate = 1.0)
+    {
+        if (($rate < 1.0) && ((mt_rand() / mt_getrandmax()) <= $rate)) {
+            return '|@' . $rate;
+        }
+        return '';
     }
 
     /**

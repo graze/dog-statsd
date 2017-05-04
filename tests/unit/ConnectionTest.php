@@ -50,7 +50,7 @@ class ConnectionTest extends TestCase
         $testCase = $this;
 
         set_error_handler(
-            function ($errno, $errstr, $errfile, $errline, $errcontext) use ($testCase, &$handlerInvoked) {
+            function ($errno, $errstr, $errfile) use ($testCase, &$handlerInvoked) {
                 $handlerInvoked = true;
 
                 $testCase->assertSame(E_USER_WARNING, $errno);
