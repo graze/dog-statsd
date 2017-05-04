@@ -285,11 +285,14 @@ class Client
     {
         $metrics = is_array($metrics) ? $metrics : [$metrics];
 
-        $data = [];
-        foreach ($metrics as $metric) {
-            $data[$metric] = $delta . '|c' . $this->sample($sampleRate);
+        if ($this->isSampled($sampleRate, $postfix)) {
+            $data = [];
+            foreach ($metrics as $metric) {
+                $data[$metric] = $delta . '|c' . $postfix;
+            }
+            return $this->send($data, $tags);
         }
-        return $this->send($data, $tags);
+        return $this;
     }
 
     /**
@@ -375,9 +378,13 @@ class Client
      */
     public function histogram($metric, $value, $sampleRate = 1.0, array $tags = [])
     {
-        $data = [];
-        $data[$metric] = $value . '|h' . $this->sample($sampleRate);
-        return $this->send($data, $tags);
+        if ($this->isSampled($sampleRate, $postfix)) {
+            $this->send(
+                [$metric => $value . '|h' . $postfix],
+                $tags
+            );
+        }
+        return $this;
     }
 
     /**
@@ -484,16 +491,22 @@ class Client
     }
 
     /**
-     * @param float $rate
+     * @param float  $rate
+     * @param string $postfix
      *
-     * @return string
+     * @return bool
      */
-    private function sample($rate = 1.0)
+    private function isSampled($rate = 1.0, &$postfix = '')
     {
-        if (($rate < 1.0) && ((mt_rand() / mt_getrandmax()) <= $rate)) {
-            return '|@' . $rate;
+        if ($rate < 1.0) {
+            if ((mt_rand() / mt_getrandmax()) <= $rate) {
+                $postfix = '|@'.  $rate;
+                return true;
+            }
+        } else {
+            return true;
         }
-        return '';
+        return false;
     }
 
     /**
