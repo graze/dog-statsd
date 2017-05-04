@@ -498,12 +498,11 @@ class Client
      */
     private function isSampled($rate = 1.0, &$postfix = '')
     {
-        if ($rate < 1.0) {
-            if ((mt_rand() / mt_getrandmax()) <= $rate) {
-                $postfix = '|@'.  $rate;
-                return true;
-            }
-        } else {
+        if ($rate == 1.0) {
+            return true;
+        }
+        if ((mt_rand() / mt_getrandmax()) <= $rate) {
+            $postfix = '|@' . $rate;
             return true;
         }
         return false;
@@ -619,7 +618,7 @@ class Client
 
     public function __destruct()
     {
-        if ($this->socket) {
+        if (!is_null($this->socket)) {
             fclose($this->socket);
         }
     }
