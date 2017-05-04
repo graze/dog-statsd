@@ -552,12 +552,14 @@ class Client
         if (is_null($this->socket)) {
             $this->socket = $this->connect();
         }
-        if ($this->socket) {
+        if (!is_null($this->socket)) {
             $this->message = implode("\n", $messages);
             if (@fwrite($this->socket, $this->message) === false) {
                 // attempt to re-send on socket resource failure
                 $this->socket = $this->connect();
-                @fwrite($this->socket, $this->message);
+                if (!is_null($this->socket)) {
+                    @fwrite($this->socket, $this->message);
+                }
             }
         }
 
