@@ -618,8 +618,8 @@ class Client
 
     public function __destruct()
     {
-        if (!is_null($this->socket)) {
-            fclose($this->socket);
+        if (!is_null($this->socket) && is_resource($this->socket)) {
+            @fclose($this->socket);
         }
     }
 }
