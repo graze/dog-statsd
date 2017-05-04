@@ -583,7 +583,8 @@ class Client
                 );
             }
         } else {
-            list ($sec, $ms) = sscanf($this->timeout, '%d.%d');
+            $sec = (int) $this->timeout;
+            $ms = (int) (($this->timeout - $sec) * 1000);
             stream_set_timeout($socket, $sec, $ms);
         }
         return $socket;
