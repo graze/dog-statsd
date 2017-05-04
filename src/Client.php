@@ -559,7 +559,7 @@ class Client
     }
 
     /**
-     * Write the current message to the socket
+     * Attempt to write the current message to the socket
      *
      * @return bool
      */
@@ -570,10 +570,13 @@ class Client
                 // attempt to re-send on socket resource failure
                 $this->socket = $this->connect();
                 if (!is_null($this->socket)) {
-                    @fwrite($this->socket, $this->message);
+                    return (@fwrite($this->socket, $this->message) !== false);
                 }
+            } else {
+                return true;
             }
         }
+        return false;
     }
 
     /**
