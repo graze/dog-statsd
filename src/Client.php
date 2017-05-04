@@ -79,7 +79,7 @@ class Client
     /**
      * Timeout for creating the socket connection
      *
-     * @var null|int
+     * @var null|float
      */
     protected $timeout;
 
@@ -91,11 +91,18 @@ class Client
     protected $throwExceptions = true;
 
     /**
+     * Socket connection
+     *
+     * @var resource|null
+     */
+    protected $socket = null;
+
+    /**
      * Metadata for the DataDog event message
      *
      * @var array - time - Assign a timestamp to the event.
      *            - hostname - Assign a hostname to the event
-     *            - key - Assign an aggregation key to th event, to group it with some others
+     *            - key - Assign an aggregation key to the event, to group it with some others
      *            - priority - Can be 'normal' or 'low'
      *            - source - Assign a source type to the event
      *            - alert - Can be 'error', 'warning', 'info' or 'success'
@@ -164,7 +171,7 @@ class Client
         $this->instanceId = $instanceId ?: uniqid();
 
         if (empty($this->timeout)) {
-            $this->timeout = (int) ini_get('default_socket_timeout');
+            $this->timeout = (float) ini_get('default_socket_timeout');
         }
     }
 
@@ -185,7 +192,7 @@ class Client
      *                       :host <string|ip> - host to talk to
      *                       :port <int> - Port to communicate with
      *                       :namespace <string> - Default namespace
-     *                       :timeout <int> - Timeout in seconds
+     *                       :timeout <float> - Timeout in seconds
      *                       :throwExceptions <bool> - Throw an exception on connection error
      *                       :dataDog <bool> - Use DataDog's version of statsd (Default: true)
      *                       :tags <array> - List of tags to add to each message
@@ -278,19 +285,14 @@ class Client
     {
         $metrics = is_array($metrics) ? $metrics : [$metrics];
 
-        $data = [];
-        if ($sampleRate < 1.0) {
+        if ($this->isSampled($sampleRate, $postfix)) {
+            $data = [];
             foreach ($metrics as $metric) {
-                if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
-                    $data[$metric] = $delta . '|c|@' . $sampleRate;
-                }
+                $data[$metric] = $delta . '|c' . $postfix;
             }
-        } else {
-            foreach ($metrics as $metric) {
-                $data[$metric] = $delta . '|c';
-            }
+            return $this->send($data, $tags);
         }
-        return $this->send($data, $tags);
+        return $this;
     }
 
     /**
@@ -376,16 +378,13 @@ class Client
      */
     public function histogram($metric, $value, $sampleRate = 1.0, array $tags = [])
     {
-        $data = [];
-        if ($sampleRate < 1.0) {
-            if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
-                $data[$metric] = $value . '|h|@' . $sampleRate;
-            }
-        } else {
-            $data[$metric] = $value . '|h';
+        if ($this->isSampled($sampleRate, $postfix)) {
+            return $this->send(
+                [$metric => $value . '|h' . $postfix],
+                $tags
+            );
         }
-
-        return $this->send($data, $tags);
+        return $this;
     }
 
     /**
@@ -492,6 +491,24 @@ class Client
     }
 
     /**
+     * @param float  $rate
+     * @param string $postfix
+     *
+     * @return bool
+     */
+    private function isSampled($rate = 1.0, &$postfix = '')
+    {
+        if ($rate == 1.0) {
+            return true;
+        }
+        if ((mt_rand() / mt_getrandmax()) <= $rate) {
+            $postfix = '|@' . $rate;
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param string[] $tags A list of tags to apply to each message
      *
      * @return string
@@ -542,8 +559,47 @@ class Client
      */
     protected function sendMessages(array $messages)
     {
+        if (is_null($this->socket)) {
+            $this->socket = $this->connect();
+        }
+        $this->message = implode("\n", $messages);
+        $this->write();
+
+        return $this;
+    }
+
+    /**
+     * Attempt to write the current message to the socket
+     *
+     * @return bool
+     */
+    private function write()
+    {
+        if (!is_null($this->socket)) {
+            if (@fwrite($this->socket, $this->message) === false) {
+                // attempt to re-send on socket resource failure
+                $this->socket = $this->connect();
+                if (!is_null($this->socket)) {
+                    return (@fwrite($this->socket, $this->message) !== false);
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates a persistent connection to the udp host:port
+     *
+     * @return resource
+     * @throws ConnectionException If there is a connection problem with the host
+     */
+    protected function connect()
+    {
         $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
-        if (!$socket) {
+        if ($socket === false) {
+            $socket = null;
             if ($this->throwExceptions) {
                 throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
             } else {
@@ -551,12 +607,19 @@ class Client
                     sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
                     E_USER_WARNING
                 );
-                return $this;
             }
+        } else {
+            $sec = (int) $this->timeout;
+            $ms = (int) (($this->timeout - $sec) * 1000);
+            stream_set_timeout($socket, $sec, $ms);
         }
-        $this->message = implode("\n", $messages);
-        @fwrite($socket, $this->message);
-        fclose($socket);
-        return $this;
+        return $socket;
+    }
+
+    public function __destruct()
+    {
+        if (!is_null($this->socket) && is_resource($this->socket)) {
+            @fclose($this->socket);
+        }
     }
 }

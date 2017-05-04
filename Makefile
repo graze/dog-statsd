@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 DOCKER ?= $(shell which docker)
 DOCKER_REPOSITORY := graze/php-alpine:test
-VOLUME := /opt/graze/dog-statsd
+VOLUME := /srv
 VOLUME_MAP := -v $$(pwd):${VOLUME}
 DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}
 DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}
@@ -53,6 +53,9 @@ test-coverage-html: ## Run all tests and output coverage to html.
 
 test-coverage-clover: ## Run all tests and output clover coverage to file.
 	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+
+bench: ## Run benchmars
+	${DOCKER_RUN} vendor/bin/phpbench run
 
 # Help
 

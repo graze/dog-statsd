@@ -15,6 +15,7 @@ namespace Graze\DogStatsD\Test\Unit;
 
 use Graze\DogStatsD\Client;
 use Graze\DogStatsD\Test\TestCase;
+use ReflectionProperty;
 
 class ClientTest extends TestCase
 {
@@ -34,5 +35,35 @@ class ClientTest extends TestCase
         $this->assertEquals('DogStatsD\Client::[instance2]', (String) $client2);
         $this->assertFalse((String) $client1 === (String) $client2);
         $this->assertTrue((String) $client1 === (String) $client3);
+    }
+
+    public function testDestruction()
+    {
+        $client = new Client();
+        $client->configure([]);
+        $client->increment('test', 1);
+        $client = null;
+
+        $this->assertNull($client);
+    }
+
+    public function testDestructionWithInvalidSocket()
+    {
+        // create a connection, kill the udp connection (without changing the socket), attempt to send, should re-connect and send again
+        $client = new Client();
+        $client->configure(['host' => '127.0.0.1']);
+
+        // create the connection
+        $client->increment('metric', 1);
+
+        // close the socket
+        $reflector = new ReflectionProperty(Client::class, 'socket');
+        $reflector->setAccessible(true);
+        $socket = $reflector->getValue($client);
+        fclose($socket);
+
+        $client = null;
+
+        $this->assertNull($client);
     }
 }

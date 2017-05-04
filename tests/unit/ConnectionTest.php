@@ -34,9 +34,9 @@ class ConnectionTest extends TestCase
     {
         $this->client->configure([
             'host'    => 'localhost',
-            'timeout' => 123,
+            'timeout' => 123.425,
         ]);
-        $this->assertAttributeSame(123, 'timeout', $this->client);
+        $this->assertAttributeSame(123.425, 'timeout', $this->client);
     }
 
     public function testCanBeConfiguredNotToThrowConnectionExceptions()
@@ -50,7 +50,7 @@ class ConnectionTest extends TestCase
         $testCase = $this;
 
         set_error_handler(
-            function ($errno, $errstr, $errfile, $errline, $errcontext) use ($testCase, &$handlerInvoked) {
+            function ($errno, $errstr, $errfile) use ($testCase, &$handlerInvoked) {
                 $handlerInvoked = true;
 
                 $testCase->assertSame(E_USER_WARNING, $errno);
