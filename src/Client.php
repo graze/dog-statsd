@@ -552,8 +552,20 @@ class Client
         if (is_null($this->socket)) {
             $this->socket = $this->connect();
         }
+        $this->message = implode("\n", $messages);
+        $this->write();
+
+        return $this;
+    }
+
+    /**
+     * Write the current message to the socket
+     *
+     * @return bool
+     */
+    private function write()
+    {
         if (!is_null($this->socket)) {
-            $this->message = implode("\n", $messages);
             if (@fwrite($this->socket, $this->message) === false) {
                 // attempt to re-send on socket resource failure
                 $this->socket = $this->connect();
@@ -562,14 +574,13 @@ class Client
                 }
             }
         }
-
-        return $this;
     }
 
     /**
      * Creates a persistent connection to the udp host:port
      *
      * @return resource
+     * @throws ConnectionException If there is a connection problem with the host
      */
     protected function connect()
     {
