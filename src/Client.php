@@ -102,7 +102,7 @@ class Client
      *
      * @var array - time - Assign a timestamp to the event.
      *            - hostname - Assign a hostname to the event
-     *            - key - Assign an aggregation key to th event, to group it with some others
+     *            - key - Assign an aggregation key to the event, to group it with some others
      *            - priority - Can be 'normal' or 'low'
      *            - source - Assign a source type to the event
      *            - alert - Can be 'error', 'warning', 'info' or 'success'
@@ -379,7 +379,7 @@ class Client
     public function histogram($metric, $value, $sampleRate = 1.0, array $tags = [])
     {
         if ($this->isSampled($sampleRate, $postfix)) {
-            $this->send(
+            return $this->send(
                 [$metric => $value . '|h' . $postfix],
                 $tags
             );
