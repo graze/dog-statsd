@@ -15,7 +15,6 @@ namespace Graze\DogStatsD\Test\Unit;
 
 use Graze\DogStatsD\Client;
 use Graze\DogStatsD\Test\TestCase;
-use ReflectionProperty;
 
 class ClientTest extends TestCase
 {
