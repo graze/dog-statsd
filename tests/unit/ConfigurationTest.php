@@ -85,17 +85,6 @@ class ConfigurationTest extends TestCase
 
     /**
      * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: throwExceptions is expected to be: 'boolean', was: 'string'
-     */
-    public function testInvalidThrowAnException()
-    {
-        $this->client->configure([
-            'throwExceptions' => 'fish',
-        ]);
-    }
-
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
      * @expectedExceptionMessage Option: dataDog is expected to be: 'boolean', was: 'string'
      */
     public function testInvalidDataDogThrowAnException()
@@ -114,5 +103,31 @@ class ConfigurationTest extends TestCase
         $this->client->configure([
             'tags' => 'tag,tag2',
         ]);
+    }
+
+    /**
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage Option: onError 'somethingelse' is not one of: [error,exception,ignore]
+     */
+    public function testInvalidOnErrorThrowsAnException()
+    {
+        $this->client->configure([
+            'onError' => 'somethingelse',
+        ]);
+    }
+
+    public function testOnErrorConfiguration()
+    {
+        // exception is default
+        $this->assertAttributeEquals('exception', 'onError', $this->client);
+
+        $this->client->configure(['onError' => 'error']);
+        $this->assertAttributeEquals('error', 'onError', $this->client);
+
+        $this->client->configure(['onError' => 'exception']);
+        $this->assertAttributeEquals('exception', 'onError', $this->client);
+
+        $this->client->configure(['onError' => 'ignore']);
+        $this->assertAttributeEquals('ignore', 'onError', $this->client);
     }
 }

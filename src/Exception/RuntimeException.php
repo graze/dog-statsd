@@ -19,20 +19,20 @@ use Graze\DogStatsD\Client;
 class RuntimeException extends \RuntimeException
 {
     /**
-     * Client instance that threw the exception
+     * Client instance id that threw the exception
      *
-     * @var Client
+     * @var string
      */
     protected $instance;
 
     /**
      * Create new instance
      *
-     * @param Client         $instance Client instance that threw the exception
+     * @param string         $instance Client instance that threw the exception
      * @param string|null    $message  Exception message
      * @param Exception|null $previous Previous Exception
      */
-    public function __construct(Client $instance, $message = '', Exception $previous = null)
+    public function __construct($instance, $message = '', Exception $previous = null)
     {
         $this->instance = $instance;
         parent::__construct($message, 0, $previous);

@@ -11,17 +11,16 @@
  * @link    https://github.com/graze/dog-statsd
  */
 
-namespace Graze\DogStatsD;
+namespace Graze\DogStatsD\Stream;
 
 use Graze\DogStatsD\Exception\ConnectionException;
-use Graze\DogStatsD\Stream\WriterInterface;
 
 /**
- * WriteStream will attempt to write a message to a udp socket.
+ * StreamWriter will attempt to write a message to a udp socket.
  *
  * If the connection fails, it will never try and reconnect to prevent application blocking
  */
-class WriteStream implements WriterInterface
+class StreamWriter implements WriterInterface
 {
     /**
      * Seconds to wait (as a base) for exponential back-off on connection
@@ -29,40 +28,49 @@ class WriteStream implements WriterInterface
      * minDelay = RETRY_INTERVAL * (2 ^ num_failed_attempts)
      *
      * e.g.
-     * 0.1 0.2 0.4 0.8 1.6 3.2 6.4 12.8 25.6 51.2 102.4 etc...
+     * 0, 0.1 0.2 0.4 0.8 1.6 3.2 6.4 12.8 25.6 51.2 102.4 etc...
      */
     const RETRY_INTERVAL = 0.1;
+
+    const ON_ERROR_ERROR     = 'error';
+    const ON_ERROR_EXCEPTION = 'exception';
+    const ON_ERROR_IGNORE    = 'ignore';
 
     /** @var resource|null */
     protected $socket;
     /** @var string */
     private $host;
-    /** @var string */
+    /** @var int */
     private $port;
-    /** @var bool */
-    private $throwExceptions;
+    /** @var string */
+    private $onError;
     /** @var float|null */
     private $timeout;
-    /** @var Client */
-    private $client;
+    /** @var string */
+    private $instance;
     /** @var int */
     private $numFails = 0;
     /** @var float */
     private $waitTill = 0.0;
 
     /**
-     * @param Client     $client
+     * @param string     $instance
      * @param string     $host
-     * @param string     $port
-     * @param bool       $throwExceptions
+     * @param int        $port
+     * @param string     $onError What to do on connection error
      * @param float|null $timeout
      */
-    public function __construct(Client $client, $host, $port, $throwExceptions = false, $timeout = null)
-    {
-        $this->client = $client;
+    public function __construct(
+        $instance = 'writer',
+        $host = '127.0.0.1',
+        $port = 8125,
+        $onError = self::ON_ERROR_EXCEPTION,
+        $timeout = null
+    ) {
+        $this->instance = $instance;
         $this->host = $host;
         $this->port = $port;
-        $this->throwExceptions = $throwExceptions;
+        $this->onError = $onError;
         $this->timeout = $timeout;
     }
 
@@ -85,7 +93,7 @@ class WriteStream implements WriterInterface
             if (@fwrite($this->socket, $message) === false) {
                 // attempt to re-send on socket resource failure
                 $this->socket = $this->connect();
-                if (!$this->socket) {
+                if ($this->socket) {
                     return (@fwrite($this->socket, $message) !== false);
                 }
             } else {
@@ -122,16 +130,17 @@ class WriteStream implements WriterInterface
     {
         $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
         if ($socket === false) {
-            $this->numFails++;
-            $this->waitTill = microtime(true) + (static::RETRY_INTERVAL * (pow(2, $this->numFails)));
+            $this->waitTill = microtime(true) + (static::RETRY_INTERVAL * (pow(2, $this->numFails++)));
 
-            if ($this->throwExceptions) {
-                throw new ConnectionException($this->client, '(' . $errno . ') ' . $errstr);
-            } else {
-                trigger_error(
-                    sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
-                    E_USER_WARNING
-                );
+            switch ($this->onError) {
+                case static::ON_ERROR_ERROR:
+                    trigger_error(
+                        sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
+                        E_USER_WARNING
+                    );
+                    break;
+                case static::ON_ERROR_EXCEPTION:
+                    throw new ConnectionException($this->instance, '(' . $errno . ') ' . $errstr);
             }
         } else {
             $this->numFails = 0;

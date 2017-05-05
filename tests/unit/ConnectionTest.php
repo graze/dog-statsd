@@ -39,11 +39,11 @@ class ConnectionTest extends TestCase
         $this->assertAttributeSame(123.425, 'timeout', $this->client);
     }
 
-    public function testCanBeConfiguredNotToThrowConnectionExceptions()
+    public function testCanBeConfiguredToThrowErrors()
     {
         $this->client->configure([
-            'host'            => 'hostdoesnotexiststalleverlol.stupidtld',
-            'throwExceptions' => false,
+            'host'    => 'hostdoesnotexiststalleverlol.stupidtld',
+            'onError' => 'error',
         ]);
         $handlerInvoked = false;
 
@@ -58,7 +58,6 @@ class ConnectionTest extends TestCase
                     'StatsD server connection failed (udp://hostdoesnotexiststalleverlol.stupidtld:8125)',
                     $errstr
                 );
-                $testCase->assertSame(realpath(__DIR__ . '/../../src/Client.php'), $errfile);
             },
             E_USER_WARNING
         );
@@ -67,6 +66,17 @@ class ConnectionTest extends TestCase
         restore_error_handler();
 
         $this->assertTrue($handlerInvoked);
+    }
+
+    public function testCanBeConfiguredToNotThrowOnError()
+    {
+        $this->client->configure([
+            'host'    => 'hostdoesnotexiststalleverlol.stupidtld',
+            'onError' => 'ignore',
+        ]);
+
+        $this->client->increment('test');
+        $this->assertFalse($this->client->wasSuccessful());
     }
 
     public function testTimeoutDefaultsToPhpIniDefaultSocketTimeout()

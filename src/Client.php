@@ -16,6 +16,7 @@ namespace Graze\DogStatsD;
 use Graze\DogStatsD\Exception\ConfigurationException;
 use Graze\DogStatsD\Exception\ConnectionException;
 use Graze\DogStatsD\Stream\WriterInterface;
+use Graze\DogStatsD\Stream\StreamWriter;
 
 /**
  * StatsD Client Class - Modified to support DataDogs statsd server
@@ -92,11 +93,16 @@ class Client
     protected $timeout;
 
     /**
-     * Whether or not an exception should be thrown on failed connections
+     * What we should do on connection failure
      *
-     * @var bool
+     * Options:
+     *  - error
+     *  - exception
+     *  - ignore
+     *
+     * @var string
      */
-    protected $throwExceptions = true;
+    protected $onError = 'exception';
 
     /**
      * Socket connection
@@ -201,7 +207,7 @@ class Client
      *                       :port <int> - Port to communicate with
      *                       :namespace <string> - Default namespace
      *                       :timeout <float> - Timeout in seconds
-     *                       :throwExceptions <bool> - Throw an exception on connection error
+     *                       :onError <enum[error,exception,ignore]> - What we should do on error
      *                       :dataDog <bool> - Use DataDog's version of statsd (Default: true)
      *                       :tags <array> - List of tags to add to each message
      *
@@ -228,12 +234,22 @@ class Client
         $setOption('port', 'integer');
         $setOption('namespace', 'string');
         $setOption('timeout');
-        $setOption('throwExceptions', 'boolean');
+        $setOption('onError', 'string');
         $setOption('dataDog', 'boolean');
         $setOption('tags', 'array');
 
         if (!$this->port || !is_numeric($this->port) || $this->port > 65535) {
-            throw new ConfigurationException($this, 'Option: Port is out of range');
+            throw new ConfigurationException($this->instanceId, 'Option: Port is out of range');
+        }
+
+        if (!in_array(
+            $this->onError,
+            [StreamWriter::ON_ERROR_ERROR, StreamWriter::ON_ERROR_EXCEPTION, StreamWriter::ON_ERROR_IGNORE]
+        )) {
+            throw new ConfigurationException(
+                $this->instanceId,
+                sprintf("Option: onError '%s' is not one of: [error,exception,ignore]", $this->onError)
+            );
         }
 
         return $this;
@@ -578,7 +594,7 @@ class Client
     protected function sendMessages(array $messages)
     {
         if (is_null($this->stream)) {
-            $this->stream = new WriteStream($this, $this->host, $this->port, $this->throwExceptions, $this->timeout);
+            $this->stream = new StreamWriter($this, $this->host, $this->port, $this->onError, $this->timeout);
         }
         $this->message = implode("\n", $messages);
         $this->written = $this->stream->write($this->message);

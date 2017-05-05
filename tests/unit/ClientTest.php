@@ -46,24 +46,4 @@ class ClientTest extends TestCase
 
         $this->assertNull($client);
     }
-
-    public function testDestructionWithInvalidSocket()
-    {
-        // create a connection, kill the udp connection (without changing the socket), attempt to send, should re-connect and send again
-        $client = new Client();
-        $client->configure(['host' => '127.0.0.1']);
-
-        // create the connection
-        $client->increment('metric', 1);
-
-        // close the socket
-        $reflector = new ReflectionProperty(Client::class, 'socket');
-        $reflector->setAccessible(true);
-        $socket = $reflector->getValue($client);
-        fclose($socket);
-
-        $client = null;
-
-        $this->assertNull($client);
-    }
 }
