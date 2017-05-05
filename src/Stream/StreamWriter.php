@@ -77,6 +77,8 @@ class StreamWriter implements WriterInterface
     public function __destruct()
     {
         if ($this->socket) {
+            // the reason for this failing is that it is already closed, so ignore the result and not messing with
+            // parent classes
             @fclose($this->socket);
         }
     }
@@ -144,7 +146,7 @@ class StreamWriter implements WriterInterface
             }
         } else {
             $this->numFails = 0;
-            $this->waitTill = 0;
+            $this->waitTill = 0.0;
 
             $sec = (int) $this->timeout;
             $ms = (int) (($this->timeout - $sec) * 1000);
