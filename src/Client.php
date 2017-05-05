@@ -15,6 +15,7 @@ namespace Graze\DogStatsD;
 
 use Graze\DogStatsD\Exception\ConfigurationException;
 use Graze\DogStatsD\Exception\ConnectionException;
+use Graze\DogStatsD\Stream\WriterInterface;
 
 /**
  * StatsD Client Class - Modified to support DataDogs statsd server
@@ -70,6 +71,13 @@ class Client
     protected $message = '';
 
     /**
+     * Was the last message sucessfully sent
+     *
+     * @var bool
+     */
+    protected $written;
+
+    /**
      * Class namespace
      *
      * @var string
@@ -93,9 +101,9 @@ class Client
     /**
      * Socket connection
      *
-     * @var resource|null
+     * @var WriterInterface
      */
-    protected $socket = null;
+    protected $stream;
 
     /**
      * Metadata for the DataDog event message
@@ -269,6 +277,16 @@ class Client
     public function getLastMessage()
     {
         return $this->message;
+    }
+
+    /**
+     * Was the last write successful
+     *
+     * @return bool
+     */
+    public function wasSuccessful()
+    {
+        return $this->written;
     }
 
     /**
@@ -559,67 +577,12 @@ class Client
      */
     protected function sendMessages(array $messages)
     {
-        if (is_null($this->socket)) {
-            $this->socket = $this->connect();
+        if (is_null($this->stream)) {
+            $this->stream = new WriteStream($this, $this->host, $this->port, $this->throwExceptions, $this->timeout);
         }
         $this->message = implode("\n", $messages);
-        $this->write();
+        $this->written = $this->stream->write($this->message);
 
         return $this;
-    }
-
-    /**
-     * Attempt to write the current message to the socket
-     *
-     * @return bool
-     */
-    private function write()
-    {
-        if (!is_null($this->socket)) {
-            if (@fwrite($this->socket, $this->message) === false) {
-                // attempt to re-send on socket resource failure
-                $this->socket = $this->connect();
-                if (!is_null($this->socket)) {
-                    return (@fwrite($this->socket, $this->message) !== false);
-                }
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Creates a persistent connection to the udp host:port
-     *
-     * @return resource
-     * @throws ConnectionException If there is a connection problem with the host
-     */
-    protected function connect()
-    {
-        $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
-        if ($socket === false) {
-            $socket = null;
-            if ($this->throwExceptions) {
-                throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
-            } else {
-                trigger_error(
-                    sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
-                    E_USER_WARNING
-                );
-            }
-        } else {
-            $sec = (int) $this->timeout;
-            $ms = (int) (($this->timeout - $sec) * 1000);
-            stream_set_timeout($socket, $sec, $ms);
-        }
-        return $socket;
-    }
-
-    public function __destruct()
-    {
-        if (!is_null($this->socket) && is_resource($this->socket)) {
-            @fclose($this->socket);
-        }
     }
 }

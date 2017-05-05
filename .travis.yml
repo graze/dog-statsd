@@ -15,4 +15,5 @@ script:
   - vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
 
 after_script:
-  - ./build/coverage_to_scruitinizer.sh
+  - test -f ./tests/report/coverage.clover && (wget https://scrutinizer-ci.com/ocular.phar; php ocular.phar code-coverage:upload --format=php-clover ./tests/report/coverage.clover)
+
