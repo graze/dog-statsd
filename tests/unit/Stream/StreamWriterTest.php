@@ -4,6 +4,7 @@ namespace Graze\DogStatsD\Test\Unit;
 
 use Graze\DogStatsD\Stream\StreamWriter;
 use Graze\DogStatsD\Test\TestCase;
+use ReflectionClass;
 use ReflectionProperty;
 
 class StreamWriterTest extends TestCase
@@ -44,14 +45,30 @@ class StreamWriterTest extends TestCase
     public function testWhenItWillRetryIsExponential()
     {
         $writer = new StreamWriter('test', 'doesnotexist.tld', 8125, StreamWriter::ON_ERROR_IGNORE);
-        $this->assertFalse($writer->write('test'));
-        $this->assertFalse($writer->write('test'));
-        $this->assertFalse($writer->write('test'));
-        $this->assertFalse($writer->write('test'));
-        $this->assertFalse($writer->write('test'));
-        $this->assertFalse($writer->write('test'));
 
-        $this->assertAttributeGreaterThan(microtime(true), 'waitTill', $writer);
-        $this->assertAttributeLessThan(6, 'numFails', $writer);
+        // make connect public to test lots of attempts to connect
+        $class = new ReflectionClass(StreamWriter::class);
+        $connect = $class->getMethod('connect');
+        $connect->setAccessible(true);
+
+        $connect->invoke($writer);
+        $connect->invoke($writer);
+        $connect->invoke($writer);
+        $connect->invoke($writer);
+        $connect->invoke($writer);
+        $connect->invoke($writer);
+        $connect->invoke($writer);
+
+        $this->assertAttributeGreaterThan(microtime(true) + 2, 'waitTill', $writer);
+        $this->assertAttributeEquals(7, 'numFails', $writer);
+
+        $writer->write('test');
+
+        $this->assertAttributeEquals(
+            7,
+            'numFails',
+            $writer,
+            'attempting to write with a back-off should not try and connect'
+        );
     }
 }
