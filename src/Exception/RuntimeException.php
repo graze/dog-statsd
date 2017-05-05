@@ -39,9 +39,9 @@ class RuntimeException extends \RuntimeException
     }
 
     /**
-     * Get Client instance that threw the exception
+     * Get instance name that threw the exception
      *
-     * @return Client Client instance
+     * @return string Instance name
      */
     public function getInstance()
     {
