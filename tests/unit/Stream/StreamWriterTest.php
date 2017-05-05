@@ -9,7 +9,6 @@ use ReflectionProperty;
 
 class StreamWriterTest extends TestCase
 {
-
     public function testDestructionWithInvalidSocket()
     {
         $writer = new StreamWriter();

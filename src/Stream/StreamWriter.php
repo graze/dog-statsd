@@ -108,7 +108,7 @@ class StreamWriter implements WriterInterface
      */
     protected function ensureConnection()
     {
-        if (!$this->socket && $this->canConnect()) {
+        if ((!$this->socket) && ($this->canConnect())) {
             $this->socket = $this->connect();
         }
     }
