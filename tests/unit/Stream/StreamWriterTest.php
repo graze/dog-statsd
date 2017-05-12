@@ -70,4 +70,10 @@ class StreamWriterTest extends TestCase
             'attempting to write with a back-off should not try and connect'
         );
     }
+
+    public function testLongMessage()
+    {
+        $writer = new StreamWriter();
+        $this->assertTrue($writer->write(str_repeat('x', 10000)));
+    }
 }

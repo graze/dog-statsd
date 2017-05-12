@@ -32,6 +32,11 @@ class StreamWriter implements WriterInterface
      */
     const RETRY_INTERVAL = 0.1;
 
+    /**
+     * Maximum length of a string to send
+     */
+    const MAX_SEND_LENGTH = 4096;
+
     const ON_ERROR_ERROR     = 'error';
     const ON_ERROR_EXCEPTION = 'exception';
     const ON_ERROR_IGNORE    = 'ignore';
@@ -92,15 +97,20 @@ class StreamWriter implements WriterInterface
     {
         $this->ensureConnection();
         if ($this->socket) {
-            if (@fwrite($this->socket, $message) === false) {
-                // attempt to re-send on socket resource failure
-                $this->socket = $this->connect();
-                if ($this->socket) {
-                    return (@fwrite($this->socket, $message) !== false);
+            $totalLength = strlen($message);
+            $retries = 1;
+            for ($written = 0; $written < $totalLength; $written += $response) {
+                $response = @fwrite($this->socket, substr($message, $written), static::MAX_SEND_LENGTH);
+                if ($response === false) {
+                    if ($retries-- > 0) {
+                        $this->socket = $this->connect();
+                        $response = 0;
+                    } else {
+                        return false;
+                    }
                 }
-            } else {
-                return true;
             }
+            return ($written === $totalLength);
         }
         return false;
     }

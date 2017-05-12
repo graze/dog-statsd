@@ -76,4 +76,15 @@ class EventTest extends TestCase
         $this->client->event('some_title', 'textAndThings');
         $this->assertEquals('', $this->client->getLastMessage());
     }
+
+    public function testLongMessage()
+    {
+        $this->client->event(
+            'long_message',
+            str_repeat('x', 10000)
+        );
+
+        $this->assertEquals('_e{12,10000}:long_message|' . str_repeat('x', 10000), $this->client->getLastMessage());
+        $this->assertTrue($this->client->wasSuccessful());
+    }
 }
