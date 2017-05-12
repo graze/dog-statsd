@@ -34,23 +34,23 @@ class ConnectionTest extends TestCase
     {
         $this->client->configure([
             'host'    => 'localhost',
-            'timeout' => 123,
+            'timeout' => 123.425,
         ]);
-        $this->assertAttributeSame(123, 'timeout', $this->client);
+        $this->assertAttributeSame(123.425, 'timeout', $this->client);
     }
 
-    public function testCanBeConfiguredNotToThrowConnectionExceptions()
+    public function testCanBeConfiguredToThrowErrors()
     {
         $this->client->configure([
-            'host'            => 'hostdoesnotexiststalleverlol.stupidtld',
-            'throwExceptions' => false,
+            'host'    => 'hostdoesnotexiststalleverlol.stupidtld',
+            'onError' => 'error',
         ]);
         $handlerInvoked = false;
 
         $testCase = $this;
 
         set_error_handler(
-            function ($errno, $errstr, $errfile, $errline, $errcontext) use ($testCase, &$handlerInvoked) {
+            function ($errno, $errstr) use ($testCase, &$handlerInvoked) {
                 $handlerInvoked = true;
 
                 $testCase->assertSame(E_USER_WARNING, $errno);
@@ -58,7 +58,6 @@ class ConnectionTest extends TestCase
                     'StatsD server connection failed (udp://hostdoesnotexiststalleverlol.stupidtld:8125)',
                     $errstr
                 );
-                $testCase->assertSame(realpath(__DIR__ . '/../../src/Client.php'), $errfile);
             },
             E_USER_WARNING
         );
@@ -67,6 +66,17 @@ class ConnectionTest extends TestCase
         restore_error_handler();
 
         $this->assertTrue($handlerInvoked);
+    }
+
+    public function testCanBeConfiguredToNotThrowOnError()
+    {
+        $this->client->configure([
+            'host'    => 'hostdoesnotexiststalleverlol.stupidtld',
+            'onError' => 'ignore',
+        ]);
+
+        $this->client->increment('test');
+        $this->assertFalse($this->client->wasSuccessful());
     }
 
     public function testTimeoutDefaultsToPhpIniDefaultSocketTimeout()

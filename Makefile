@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 DOCKER ?= $(shell which docker)
 DOCKER_REPOSITORY := graze/php-alpine:test
-VOLUME := /opt/graze/dog-statsd
+VOLUME := /srv
 VOLUME_MAP := -v $$(pwd):${VOLUME}
 DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}
 DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}

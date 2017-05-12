@@ -19,7 +19,7 @@ class CounterTest extends TestCase
 {
     public function testIncrement()
     {
-        $this->client->increment('test_metric');
+        $this->client->increment('test_metric', 1);
         $this->assertEquals('test_metric:1|c', $this->client->getLastMessage());
     }
 
@@ -35,6 +35,12 @@ class CounterTest extends TestCase
             $this->client->increment('test_metric', 1, 0.75);
         }
         $this->assertEquals('test_metric:1|c|@0.75', $this->client->getLastMessage());
+    }
+
+    public function testIncrementSampleFailure()
+    {
+        $this->client->increment('test_metric', 1, 0);
+        $this->assertEquals('', $this->client->getLastMessage());
     }
 
     public function testDecrement()

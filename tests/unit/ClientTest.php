@@ -35,4 +35,14 @@ class ClientTest extends TestCase
         $this->assertFalse((String) $client1 === (String) $client2);
         $this->assertTrue((String) $client1 === (String) $client3);
     }
+
+    public function testDestruction()
+    {
+        $client = new Client();
+        $client->configure([]);
+        $client->increment('test', 1);
+        $client = null;
+
+        $this->assertNull($client);
+    }
 }

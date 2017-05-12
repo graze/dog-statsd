@@ -15,6 +15,8 @@ namespace Graze\DogStatsD;
 
 use Graze\DogStatsD\Exception\ConfigurationException;
 use Graze\DogStatsD\Exception\ConnectionException;
+use Graze\DogStatsD\Stream\WriterInterface;
+use Graze\DogStatsD\Stream\StreamWriter;
 
 /**
  * StatsD Client Class - Modified to support DataDogs statsd server
@@ -70,6 +72,13 @@ class Client
     protected $message = '';
 
     /**
+     * Was the last message sucessfully sent
+     *
+     * @var bool
+     */
+    protected $written;
+
+    /**
      * Class namespace
      *
      * @var string
@@ -79,23 +88,35 @@ class Client
     /**
      * Timeout for creating the socket connection
      *
-     * @var null|int
+     * @var null|float
      */
     protected $timeout;
 
     /**
-     * Whether or not an exception should be thrown on failed connections
+     * What we should do on connection failure
      *
-     * @var bool
+     * Options:
+     *  - error
+     *  - exception
+     *  - ignore
+     *
+     * @var string
      */
-    protected $throwExceptions = true;
+    protected $onError = 'exception';
+
+    /**
+     * Socket connection
+     *
+     * @var WriterInterface
+     */
+    protected $stream;
 
     /**
      * Metadata for the DataDog event message
      *
      * @var array - time - Assign a timestamp to the event.
      *            - hostname - Assign a hostname to the event
-     *            - key - Assign an aggregation key to th event, to group it with some others
+     *            - key - Assign an aggregation key to the event, to group it with some others
      *            - priority - Can be 'normal' or 'low'
      *            - source - Assign a source type to the event
      *            - alert - Can be 'error', 'warning', 'info' or 'success'
@@ -164,7 +185,7 @@ class Client
         $this->instanceId = $instanceId ?: uniqid();
 
         if (empty($this->timeout)) {
-            $this->timeout = (int) ini_get('default_socket_timeout');
+            $this->timeout = (float) ini_get('default_socket_timeout');
         }
     }
 
@@ -185,8 +206,8 @@ class Client
      *                       :host <string|ip> - host to talk to
      *                       :port <int> - Port to communicate with
      *                       :namespace <string> - Default namespace
-     *                       :timeout <int> - Timeout in seconds
-     *                       :throwExceptions <bool> - Throw an exception on connection error
+     *                       :timeout <float> - Timeout in seconds
+     *                       :onError <enum[error,exception,ignore]> - What we should do on error
      *                       :dataDog <bool> - Use DataDog's version of statsd (Default: true)
      *                       :tags <array> - List of tags to add to each message
      *
@@ -213,12 +234,22 @@ class Client
         $setOption('port', 'integer');
         $setOption('namespace', 'string');
         $setOption('timeout');
-        $setOption('throwExceptions', 'boolean');
+        $setOption('onError', 'string');
         $setOption('dataDog', 'boolean');
         $setOption('tags', 'array');
 
         if (!$this->port || !is_numeric($this->port) || $this->port > 65535) {
-            throw new ConfigurationException($this, 'Option: Port is out of range');
+            throw new ConfigurationException($this->instanceId, 'Option: Port is out of range');
+        }
+
+        if (!in_array(
+            $this->onError,
+            [StreamWriter::ON_ERROR_ERROR, StreamWriter::ON_ERROR_EXCEPTION, StreamWriter::ON_ERROR_IGNORE]
+        )) {
+            throw new ConfigurationException(
+                $this->instanceId,
+                sprintf("Option: onError '%s' is not one of: [error,exception,ignore]", $this->onError)
+            );
         }
 
         return $this;
@@ -265,6 +296,16 @@ class Client
     }
 
     /**
+     * Was the last write successful
+     *
+     * @return bool
+     */
+    public function wasSuccessful()
+    {
+        return $this->written;
+    }
+
+    /**
      * Increment a metric
      *
      * @param string|string[] $metrics    Metric(s) to increment
@@ -278,19 +319,14 @@ class Client
     {
         $metrics = is_array($metrics) ? $metrics : [$metrics];
 
-        $data = [];
-        if ($sampleRate < 1.0) {
+        if ($this->isSampled($sampleRate, $postfix)) {
+            $data = [];
             foreach ($metrics as $metric) {
-                if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
-                    $data[$metric] = $delta . '|c|@' . $sampleRate;
-                }
+                $data[$metric] = $delta . '|c' . $postfix;
             }
-        } else {
-            foreach ($metrics as $metric) {
-                $data[$metric] = $delta . '|c';
-            }
+            return $this->send($data, $tags);
         }
-        return $this->send($data, $tags);
+        return $this;
     }
 
     /**
@@ -376,16 +412,13 @@ class Client
      */
     public function histogram($metric, $value, $sampleRate = 1.0, array $tags = [])
     {
-        $data = [];
-        if ($sampleRate < 1.0) {
-            if ((mt_rand() / mt_getrandmax()) <= $sampleRate) {
-                $data[$metric] = $value . '|h|@' . $sampleRate;
-            }
-        } else {
-            $data[$metric] = $value . '|h';
+        if ($this->isSampled($sampleRate, $postfix)) {
+            return $this->send(
+                [$metric => $value . '|h' . $postfix],
+                $tags
+            );
         }
-
-        return $this->send($data, $tags);
+        return $this;
     }
 
     /**
@@ -492,6 +525,24 @@ class Client
     }
 
     /**
+     * @param float  $rate
+     * @param string $postfix
+     *
+     * @return bool
+     */
+    private function isSampled($rate = 1.0, &$postfix = '')
+    {
+        if ($rate == 1.0) {
+            return true;
+        }
+        if ((mt_rand() / mt_getrandmax()) <= $rate) {
+            $postfix = '|@' . $rate;
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param string[] $tags A list of tags to apply to each message
      *
      * @return string
@@ -542,21 +593,12 @@ class Client
      */
     protected function sendMessages(array $messages)
     {
-        $socket = @fsockopen('udp://' . $this->host, $this->port, $errno, $errstr, $this->timeout);
-        if (!$socket) {
-            if ($this->throwExceptions) {
-                throw new ConnectionException($this, '(' . $errno . ') ' . $errstr);
-            } else {
-                trigger_error(
-                    sprintf('StatsD server connection failed (udp://%s:%d)', $this->host, $this->port),
-                    E_USER_WARNING
-                );
-                return $this;
-            }
+        if (is_null($this->stream)) {
+            $this->stream = new StreamWriter($this, $this->host, $this->port, $this->onError, $this->timeout);
         }
         $this->message = implode("\n", $messages);
-        @fwrite($socket, $this->message);
-        fclose($socket);
+        $this->written = $this->stream->write($this->message);
+
         return $this;
     }
 }
