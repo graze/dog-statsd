@@ -35,7 +35,7 @@ class StreamWriter implements WriterInterface
     /**
      * Maximum length of a string to send
      */
-    const MAX_SEND_LENGTH = 4096;
+    const MAX_SEND_LENGTH = 1024;
 
     const ON_ERROR_ERROR     = 'error';
     const ON_ERROR_EXCEPTION = 'exception';

@@ -3,9 +3,8 @@ SHELL = /bin/sh
 DOCKER ?= $(shell which docker)
 DOCKER_REPOSITORY := graze/php-alpine:test
 VOLUME := /srv
-VOLUME_MAP := -v $$(pwd):${VOLUME}
-DOCKER_RUN_BASE := ${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME}
-DOCKER_RUN := ${DOCKER_RUN_BASE} ${DOCKER_REPOSITORY}
+DOCKER_RUN_BASE := ${DOCKER} run --rm -t -v $$(pwd):${VOLUME} -w ${VOLUME}
+DOCKER_RUN := docker-compose run --rm test
 
 .PHONY: install composer clean help run
 .PHONY: test lint lint-fix test-unit test-integration test-matrix test-coverage test-coverage-html test-coverage-clover
@@ -27,7 +26,7 @@ composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 # Testing
 
 test: ## Run the unit and integration testsuites.
-test: lint test-unit
+test: lint test-unit test-integration
 
 lint: ## Run phpcs against the code.
 	${DOCKER_RUN} vendor/bin/phpcs -p --warning-severity=0 src/ tests/
@@ -38,12 +37,17 @@ lint-fix: ## Run phpcsf and fix possible lint errors.
 test-unit: ## Run the unit testsuite.
 	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite unit
 
+test-integration: ## Run the integration testsuite
+	${MAKE} test-echo
+	docker-compose run --rm test vendor/bin/phpunit --colors=always --testsuite integration
+	${MAKE} test-echo-stop
+
 test-matrix: ## Run the unit tests against multiple targets.
-	make DOCKER_REPOSITORY="php:5.5-alpine" test
-	make DOCKER_REPOSITORY="php:5.6-alpine" test
-	make DOCKER_REPOSITORY="php:7.0-alpine" test
-	make DOCKER_REPOSITORY="php:7.1-alpine" test
-	make DOCKER_REPOSITORY="hhvm/hhvm:latest" test
+	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:5.5-alpine" test
+	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:5.6-alpine" test
+	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:7.0-alpine" test
+	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:7.1-alpine" test
+	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} hhvm/hhvm:latest" test
 
 test-coverage: ## Run all tests and output coverage to the console.
 	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-text
@@ -53,6 +57,12 @@ test-coverage-html: ## Run all tests and output coverage to html.
 
 test-coverage-clover: ## Run all tests and output clover coverage to file.
 	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+
+test-echo: ## Run an echo server
+	docker-compose up -d echo
+
+test-echo-stop: ## Stop the echo server
+	docker-compose stop echo
 
 # Help
 

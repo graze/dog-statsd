@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  test:
+    image: graze/php-alpine:test
+    volumes:
+      - .:/srv
+    working_dir: /srv
+
+  echo:
+    image: python:2-alpine
+    volumes:
+      - ./tests/src/echo:/srv
+    working_dir: /srv
+    command: python echo.py
