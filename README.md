@@ -45,14 +45,14 @@ $statsd2 = DogStatsD\Client::instance('server2')->configure([...]);
 The StatsD client waits for `ini_get('default_socket_timeout')` seconds when opening the socket by default. To reduce
 this timeout, add `'timeout' => <int>` to your config.
 
-The StatsD client will throw a `ConnectionException` if it is unable to send data to the StatsD server. You may choose
-to disable these exceptions and log a PHP warning instead if you wish. To do so, include the following in your config:
+The StatsD client will either throw a `ConnectionException`, throw a warning or ignore all errors if it is unable to
+send data to the StatsD server. This can be configured using the `onError` property
 
 ```
-    'throwExceptions' => false
+    'onError' => 'error' // 'error', 'exception' or 'ignore'
 ```
 
-If omitted, this option defaults to `true`.
+By default this is set to `'error'`
 
 #### Core StatsD implementation
 
