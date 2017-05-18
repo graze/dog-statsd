@@ -26,9 +26,9 @@ class TimerTest extends TestCase
     public function testFunctionTiming()
     {
         $this->client->time('test_metric', function () {
-            usleep(50000);
+            usleep(100000);
         });
-        $this->assertRegExp('/test_metric:5[0-9]{1}\.[0-9]+\|ms/', $this->client->getLastMessage());
+        $this->assertRegExp('/test_metric:1[0-9]{2}\.[0-9]+\|ms/', $this->client->getLastMessage());
     }
 
     public function testTags()
