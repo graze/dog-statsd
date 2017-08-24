@@ -238,8 +238,9 @@ class Client
         $setOption('dataDog', 'boolean');
         $setOption('tags', 'array');
 
+        $this->port = (int) $this->port;
         if (!$this->port || !is_numeric($this->port) || $this->port > 65535) {
-            throw new ConfigurationException($this->instanceId, 'Option: Port is out of range');
+            throw new ConfigurationException($this->instanceId, 'Option: Port is invalid or is out of range');
         }
 
         if (!in_array(
