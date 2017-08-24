@@ -219,7 +219,7 @@ class Client
         $setOption = function ($name, $type = null) use ($options) {
             if (isset($options[$name])) {
                 if (!is_null($type) && (gettype($options[$name]) != $type)) {
-                    throw new ConfigurationException($this, sprintf(
+                    throw new ConfigurationException($this->instanceId, sprintf(
                         "Option: %s is expected to be: '%s', was: '%s'",
                         $name,
                         $type,
@@ -231,7 +231,7 @@ class Client
         };
 
         $setOption('host', 'string');
-        $setOption('port', 'integer');
+        $setOption('port');
         $setOption('namespace', 'string');
         $setOption('timeout');
         $setOption('onError', 'string');
