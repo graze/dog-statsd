@@ -219,7 +219,7 @@ class Client
         $setOption = function ($name, $type = null) use ($options) {
             if (isset($options[$name])) {
                 if (!is_null($type) && (gettype($options[$name]) != $type)) {
-                    throw new ConfigurationException($this, sprintf(
+                    throw new ConfigurationException($this->instanceId, sprintf(
                         "Option: %s is expected to be: '%s', was: '%s'",
                         $name,
                         $type,
@@ -231,15 +231,16 @@ class Client
         };
 
         $setOption('host', 'string');
-        $setOption('port', 'integer');
+        $setOption('port');
         $setOption('namespace', 'string');
         $setOption('timeout');
         $setOption('onError', 'string');
         $setOption('dataDog', 'boolean');
         $setOption('tags', 'array');
 
+        $this->port = (int) $this->port;
         if (!$this->port || !is_numeric($this->port) || $this->port > 65535) {
-            throw new ConfigurationException($this->instanceId, 'Option: Port is out of range');
+            throw new ConfigurationException($this->instanceId, 'Option: Port is invalid or is out of range');
         }
 
         if (!in_array(

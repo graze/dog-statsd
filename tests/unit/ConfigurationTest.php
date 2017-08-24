@@ -39,7 +39,7 @@ class ConfigurationTest extends TestCase
 
     /**
      * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: Port is out of range
+     * @expectedExceptionMessage Option: Port is invalid or is out of range
      */
     public function testLargePortWillThrowAnException()
     {
@@ -50,7 +50,7 @@ class ConfigurationTest extends TestCase
 
     /**
      * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: port is expected to be: 'integer', was: 'string'
+     * @expectedExceptionMessage Option: Port is invalid or is out of range
      */
     public function testStringPortWillThrowAnException()
     {
@@ -59,9 +59,17 @@ class ConfigurationTest extends TestCase
         ]);
     }
 
+    public function testValidStringPort()
+    {
+        $this->client->configure([
+            'port' => '1234',
+        ]);
+        $this->assertEquals(1234, $this->client->getPort());
+    }
+
     public function testDefaultPort()
     {
-        $this->assertEquals($this->client->getPort(), 8125);
+        $this->assertEquals(8125, $this->client->getPort());
     }
 
     public function testValidPort()
@@ -69,7 +77,7 @@ class ConfigurationTest extends TestCase
         $this->client->configure([
             'port' => 1234,
         ]);
-        $this->assertEquals($this->client->getPort(), 1234);
+        $this->assertEquals(1234, $this->client->getPort());
     }
 
     /**
