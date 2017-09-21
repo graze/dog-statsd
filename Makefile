@@ -14,7 +14,10 @@ DOCKER_RUN := docker-compose run --rm test
 # Building
 
 install: ## Download the dependencies then build the image :rocket:.
-	make 'composer-install --optimize-autoloader --ignore-platform-reqs'
+	make 'composer-install --optimize-autoloader --prefer-dist'
+
+update: ## Update the dependencies
+	make 'composer-update --optimize-autoloader --prefer-dist'
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
