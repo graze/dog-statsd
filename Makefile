@@ -21,10 +21,10 @@ update: ## Update the dependencies
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
-        -v $$(pwd):/usr/src/app \
-        -v ~/.composer:/root/composer \
+        -v $$(pwd):/app \
+        -v ~/.composer:/tmp \
         -v ~/.ssh:/root/.ssh:ro \
-        graze/composer --ansi --no-interaction $* $(filter-out $@,$(MAKECMDGOALS))
+        composer --ansi --no-interaction $* $(filter-out $@,$(MAKECMDGOALS))
 
 # Testing
 
@@ -53,13 +53,19 @@ test-matrix: ## Run the unit tests against multiple targets.
 	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} hhvm/hhvm:latest" test
 
 test-coverage: ## Run all tests and output coverage to the console.
+	${MAKE} test-echo
 	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-text
+	${MAKE} test-echo-stop
 
 test-coverage-html: ## Run all tests and output coverage to html.
+	${MAKE} test-echo
 	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-html=./tests/report/html
+	${MAKE} test-echo-stop
 
 test-coverage-clover: ## Run all tests and output clover coverage to file.
+	${MAKE} test-echo
 	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+	${MAKE} test-echo-stop
 
 test-echo: ## Run an echo server
 	docker-compose up -d echo
