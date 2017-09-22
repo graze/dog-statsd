@@ -13,7 +13,7 @@ DOCKER_RUN := docker-compose run --rm test
 
 # Building
 
-install: ## Download the dependencies then build the image :rocket:.
+install: ## Install the dependencies
 	make 'composer-install --optimize-autoloader --prefer-dist'
 
 update: ## Update the dependencies
