@@ -55,7 +55,7 @@ class StreamWriterTest extends TestCase
     public function testLongMessage()
     {
         $this->assertTrue($this->writer->write(str_repeat('x', 10000)));
-        $out = $this->readSocket(10000);
+        $out = $this->readSocket(20000);
 
         $this->assertEquals(10000, strlen($out));
         $this->assertEquals(str_repeat('x', 10000), $out);
