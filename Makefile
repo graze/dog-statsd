@@ -1,10 +1,11 @@
 SHELL = /bin/sh
 
 DOCKER ?= $(shell which docker)
-DOCKER_REPOSITORY := graze/php-alpine:test
+PHP_VER := 7.2
+IMAGE := graze/php-alpine:${PHP_VER}-test
 VOLUME := /srv
 DOCKER_RUN_BASE := ${DOCKER} run --rm -t -v $$(pwd):${VOLUME} -w ${VOLUME}
-DOCKER_RUN := docker-compose run --rm test
+DOCKER_RUN := ${DOCKER_RUN_BASE} ${IMAGE}
 
 PREFER_LOWEST ?=
 
@@ -22,6 +23,7 @@ build-update: ## Update the dependencies
 	make 'composer-update --optimize-autoloader --prefer-dist ${PREFER_LOWEST}'
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
+	sed -E -e 's/"php": "[0-9\.]+"/"php": "${PHP_VER}"/' -i '' composer.json
 	${DOCKER} run -t --rm \
         -v $$(pwd):/app:delegated \
         -v ~/.composer:/tmp:delegated \
@@ -47,16 +49,15 @@ test-integration: ## Run the integration testsuite
 	docker-compose run --rm test vendor/bin/phpunit --colors=always --testsuite integration
 	${MAKE} test-echo-stop
 
-test-matrix-lowest:
-	${MAKE} build-update PREFER_LOWEST=--prefer-lowest
-	${MAKE} test-matrix
+test-matrix-lowest: ## Test all version, with the lowest version
+	${MAKE} test-matrix PREFER_LOWEST=--prefer-lowest
 	${MAKE} build-update
 
 test-matrix: ## Run the unit tests against multiple targets.
-	${MAKE} IMAGE="php:5.6-alpine" build-update test
-	${MAKE} IMAGE="php:7.0-alpine" build-update test
-	${MAKE} IMAGE="php:7.1-alpine" build-update test
-	${MAKE} IMAGE="php:7.2-alpine" build-update test
+	${MAKE} PHP_VER="5.6" build-update test
+	${MAKE} PHP_VER="7.0" build-update test
+	${MAKE} PHP_VER="7.1" build-update test
+	${MAKE} PHP_VER="7.2" build-update test
 
 test-coverage: ## Run all tests and output coverage to the console.
 	${MAKE} test-echo
