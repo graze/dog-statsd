@@ -6,6 +6,8 @@ VOLUME := /srv
 DOCKER_RUN_BASE := ${DOCKER} run --rm -t -v $$(pwd):${VOLUME} -w ${VOLUME}
 DOCKER_RUN := docker-compose run --rm test
 
+PREFER_LOWEST ?=
+
 .PHONY: install composer clean help run
 .PHONY: test lint lint-fix test-unit test-integration test-matrix test-coverage test-coverage-html test-coverage-clover
 
@@ -13,16 +15,16 @@ DOCKER_RUN := docker-compose run --rm test
 
 # Building
 
-install: ## Install the dependencies
-	make 'composer-install --optimize-autoloader --prefer-dist'
+build: ## Install the dependencies
+	make 'composer-install --optimize-autoloader --prefer-dist ${PREFER_LOWEST}'
 
-update: ## Update the dependencies
-	make 'composer-update --optimize-autoloader --prefer-dist'
+build-update: ## Update the dependencies
+	make 'composer-update --optimize-autoloader --prefer-dist ${PREFER_LOWEST}'
 
 composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
 	${DOCKER} run -t --rm \
-        -v $$(pwd):/app \
-        -v ~/.composer:/tmp \
+        -v $$(pwd):/app:delegated \
+        -v ~/.composer:/tmp:delegated \
         -v ~/.ssh:/root/.ssh:ro \
         composer --ansi --no-interaction $* $(filter-out $@,$(MAKECMDGOALS))
 
@@ -45,12 +47,16 @@ test-integration: ## Run the integration testsuite
 	docker-compose run --rm test vendor/bin/phpunit --colors=always --testsuite integration
 	${MAKE} test-echo-stop
 
+test-matrix-lowest:
+	${MAKE} build-update PREFER_LOWEST=--prefer-lowest
+	${MAKE} test-matrix
+	${MAKE} build-update
+
 test-matrix: ## Run the unit tests against multiple targets.
-	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:5.5-alpine" test
-	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:5.6-alpine" test
-	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:7.0-alpine" test
-	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} php:7.1-alpine" test
-	${MAKE} DOCKER_RUN="${DOCKER_RUN_BASE} hhvm/hhvm:latest" test
+	${MAKE} IMAGE="php:5.6-alpine" build-update test
+	${MAKE} IMAGE="php:7.0-alpine" build-update test
+	${MAKE} IMAGE="php:7.1-alpine" build-update test
+	${MAKE} IMAGE="php:7.2-alpine" build-update test
 
 test-coverage: ## Run all tests and output coverage to the console.
 	${MAKE} test-echo
