@@ -13,8 +13,8 @@
 
 namespace Graze\DogStatsD\Test\Unit;
 
-use Graze\DogStatsD\Exception\ConfigurationException;
 use Graze\DogStatsD\Test\TestCase;
+use TypeError;
 
 class ConfigurationTest extends TestCase
 {
@@ -137,5 +137,25 @@ class ConfigurationTest extends TestCase
 
         $this->client->configure(['onError' => 'ignore']);
         $this->assertAttributeEquals('ignore', 'onError', $this->client);
+    }
+
+    public function testTagsProcessorAcceptsCallable()
+    {
+        $processor = function (array $tags) {
+            return $tags;
+        };
+        $this->client->configure([
+            'tagProcessors' => [$processor],
+        ]);
+        $this->assertAttributeEquals([$processor], 'tagProcessors', $this->client);
+    }
+
+    /**
+     * @expectedException TypeError
+     * @expectedExceptionMessage Argument 1 passed to Graze\DogStatsD\Client::addTagProcessor() must be callable, string given
+     */
+    public function testTagsProcessorDoesNotAcceptOtherThings()
+    {
+        $this->client->configure(['tagProcessors' => ['a string']]);
     }
 }
