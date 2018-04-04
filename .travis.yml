@@ -2,15 +2,28 @@ language: php
 
 dist: trusty
 
+cache:
+  directories:
+    - $HOME/.composer/cache/files
+
 php:
-  - 5.5
   - 5.6
   - 7.0
   - 7.1
-  - hhvm
+  - 7.2
+  - nightly
+
+env:
+  - PREFER_LOWEST=--prefer-lowest
+  - PREFER_LOWEST=
+
+matrix:
+  allow_failures:
+    - php: nightly
 
 before_script:
-  - travis_retry composer update --no-interaction --prefer-dist
+  - make ensure-composer-file PHP_VER=$(php -r "echo PHP_VERSION;")
+  - travis_retry composer update --no-interaction --prefer-dist $PREFER_LOWEST
 
 script:
   - vendor/bin/phpcs -p --warning-severity=0 src/ tests/

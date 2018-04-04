@@ -17,7 +17,7 @@ class StreamWriterTest extends TestCase
     {
         parent::setUp();
 
-        $this->writer = new StreamWriter('test', 'echo');
+        $this->writer = new StreamWriter('test', 'python-echo');
 
         $this->writer->write('');
 
