@@ -6,6 +6,7 @@ IMAGE := graze/php-alpine:${PHP_VER}-test
 VOLUME := /srv
 DOCKER_RUN_BASE := ${DOCKER} run --rm -t -v $$(pwd):${VOLUME} -w ${VOLUME}
 DOCKER_RUN := ${DOCKER_RUN_BASE} ${IMAGE}
+OS = $(shell uname)
 
 PREFER_LOWEST ?=
 
@@ -22,8 +23,15 @@ build: ## Install the dependencies
 build-update: ## Update the dependencies
 	make 'composer-update --optimize-autoloader --prefer-dist ${PREFER_LOWEST}'
 
-composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
+ensure-composer-file: # Update the composer file
+ifeq (${OS},Darwin)
 	sed -E -e 's/"php": "[0-9\.]+"/"php": "${PHP_VER}"/' -i '' composer.json
+else
+	sed -r -e's/"php": "[0-9\.]+"/"php": "${PHP_VER}"/' -i'' composer.json
+endif
+
+composer-%: ## Run a composer command, `make "composer-<command> [...]"`.
+composer-%: ensure-composer-file
 	${DOCKER} run -t --rm \
         -v $$(pwd):/app:delegated \
         -v ~/.composer:/tmp:delegated \
@@ -46,7 +54,7 @@ test-unit: ## Run the unit testsuite.
 
 test-integration: ## Run the integration testsuite
 	${MAKE} test-echo
-	docker-compose run --rm test vendor/bin/phpunit --colors=always --testsuite integration
+	${DOCKER_RUN_BASE} --link python-echo ${IMAGE} vendor/bin/phpunit --colors=always --testsuite integration
 	${MAKE} test-echo-stop
 
 test-matrix-lowest: ## Test all version, with the lowest version
@@ -75,10 +83,11 @@ test-coverage-clover: ## Run all tests and output clover coverage to file.
 	${MAKE} test-echo-stop
 
 test-echo: ## Run an echo server
-	docker-compose up -d echo
+test-echo: test-echo-stop
+	${DOCKER} run --rm -t -d --name python-echo -v $$(pwd)/tests/src/echo:${VOLUME} -w ${VOLUME} python:2-alpine python echo.py
 
 test-echo-stop: ## Stop the echo server
-	docker-compose stop echo
+	@(${DOCKER} stop python-echo || true)
 
 # Help
 
