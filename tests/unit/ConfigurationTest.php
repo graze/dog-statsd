@@ -152,10 +152,11 @@ class ConfigurationTest extends TestCase
 
     /**
      * @expectedException TypeError
-     * @expectedExceptionMessage Argument 1 passed to Graze\DogStatsD\Client::addTagProcessor() must be callable, string given
      */
     public function testTagsProcessorDoesNotAcceptOtherThings()
     {
-        $this->client->configure(['tagProcessors' => ['a string']]);
+        $this->client->configure([
+            'tagProcessors' => ['a string']
+        ]);
     }
 }

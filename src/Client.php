@@ -231,6 +231,7 @@ class Client
      *                       :onError <enum[error,exception,ignore]> - What we should do on error
      *                       :dataDog <bool> - Use DataDog's version of statsd (Default: true)
      *                       :tags <array> - List of tags to add to each message
+     *                       :tagProcessors <array> - List of tags processors to use
      *
      * @return Client This instance
      * @throws ConfigurationException If port is invalid
