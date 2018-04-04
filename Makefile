@@ -69,17 +69,17 @@ test-matrix: ## Run the unit tests against multiple targets.
 
 test-coverage: ## Run all tests and output coverage to the console.
 	${MAKE} test-echo
-	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-text
+	${DOCKER_RUN_BASE} --link python-echo ${IMAGE} phpdbg7 -qrr vendor/bin/phpunit --coverage-text
 	${MAKE} test-echo-stop
 
 test-coverage-html: ## Run all tests and output coverage to html.
 	${MAKE} test-echo
-	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-html=./tests/report/html
+	${DOCKER_RUN_BASE} --link python-echo ${IMAGE} phpdbg7 -qrr vendor/bin/phpunit --coverage-html=./tests/report/html
 	${MAKE} test-echo-stop
 
 test-coverage-clover: ## Run all tests and output clover coverage to file.
 	${MAKE} test-echo
-	${DOCKER_RUN} phpdbg7 -qrr vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+	${DOCKER_RUN_BASE} --link python-echo ${IMAGE} phpdbg7 -qrr vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
 	${MAKE} test-echo-stop
 
 test-echo: ## Run an echo server
