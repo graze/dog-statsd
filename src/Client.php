@@ -261,7 +261,12 @@ class Client
         $setOption('tags', 'array');
 
         if (isset($options['tagProcessors']) && is_array($options['tagProcessors'])) {
-            array_map([$this, 'addTagProcessor'], $options['tagProcessors']);
+            foreach ($options['tagProcessors'] as $tagProcessor) {
+                if (!is_callable($tagProcessor)) {
+                    throw new ConfigurationException($this->instanceId, 'supplied tag processor is not a callable');
+                }
+                $this->addTagProcessor($tagProcessor);
+            }
         }
 
         $this->port = (int) $this->port;

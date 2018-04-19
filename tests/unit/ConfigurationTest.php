@@ -14,7 +14,6 @@
 namespace Graze\DogStatsD\Test\Unit;
 
 use Graze\DogStatsD\Test\TestCase;
-use TypeError;
 
 class ConfigurationTest extends TestCase
 {
@@ -151,7 +150,8 @@ class ConfigurationTest extends TestCase
     }
 
     /**
-     * @expectedException TypeError
+     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
+     * @expectedExceptionMessage supplied tag processor is not a callable
      */
     public function testTagsProcessorDoesNotAcceptOtherThings()
     {
