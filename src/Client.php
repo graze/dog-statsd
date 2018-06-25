@@ -602,4 +602,12 @@ class Client
 
         return $this;
     }
+
+    /**
+     * @return StreamWriter The stream
+     */
+    public function getStream()
+    {
+        return $this->stream;
+    }
 }
