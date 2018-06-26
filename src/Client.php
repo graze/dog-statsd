@@ -637,11 +637,13 @@ class Client
     protected function sendMessages(array $messages)
     {
         if (is_null($this->stream)) {
-            $this->stream = new StreamWriter($this->instanceId,
+            $this->stream = new StreamWriter(
+                $this->instanceId,
                 $this->host,
                 $this->port,
                 $this->onError,
-                $this->timeout);
+                $this->timeout
+            );
         }
         $this->message = implode("\n", $messages);
         $this->written = $this->stream->write($this->message);
