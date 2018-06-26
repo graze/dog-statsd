@@ -14,7 +14,9 @@
 namespace Graze\DogStatsD\Test\Unit;
 
 use Graze\DogStatsD\Client;
+use Graze\DogStatsD\Stream\StreamWriter;
 use Graze\DogStatsD\Test\TestCase;
+use ReflectionProperty;
 
 class ClientTest extends TestCase
 {
@@ -41,8 +43,22 @@ class ClientTest extends TestCase
         $client = new Client();
         $client->configure([]);
         $client->increment('test', 1);
+
+        // get the stream
+        $reflector = new ReflectionProperty(Client::class, 'stream');
+        $reflector->setAccessible(true);
+        $stream = $reflector->getValue($client);
+
+        // get the socket
+        $reflector = new ReflectionProperty(StreamWriter::class, 'socket');
+        $reflector->setAccessible(true);
+        $socket = $reflector->getValue($stream);
+
+        $stream = null;
+        $this->assertTrue(is_resource($socket));
         $client = null;
 
         $this->assertNull($client);
+        $this->assertFalse(is_resource($socket));
     }
 }
