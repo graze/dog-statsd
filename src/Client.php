@@ -161,13 +161,6 @@ class Client
     protected $tags = [];
 
     /**
-     * List of tags processors to apply to every metric being sent out
-     *
-     * @var callable[]
-     */
-    protected $tagProcessors = [];
-
-    /**
      * Singleton Reference
      *
      * @param  string $name Instance name
@@ -231,7 +224,6 @@ class Client
      *                       :onError <enum[error,exception,ignore]> - What we should do on error
      *                       :dataDog <bool> - Use DataDog's version of statsd (Default: true)
      *                       :tags <array> - List of tags to add to each message
-     *                       :tagProcessors <array> - List of tags processors to use `function (array $tags): array`
      *
      * @return Client This instance
      * @throws ConfigurationException If port is invalid
@@ -260,15 +252,6 @@ class Client
         $setOption('dataDog', 'boolean');
         $setOption('tags', 'array');
 
-        if (isset($options['tagProcessors']) && is_array($options['tagProcessors'])) {
-            foreach ($options['tagProcessors'] as $tagProcessor) {
-                if (!is_callable($tagProcessor)) {
-                    throw new ConfigurationException($this->instanceId, 'supplied tag processor is not a callable');
-                }
-                $this->addTagProcessor($tagProcessor);
-            }
-        }
-
         $this->port = (int) $this->port;
         if (!$this->port || !is_numeric($this->port) || $this->port > 65535) {
             throw new ConfigurationException($this->instanceId, 'Option: Port is invalid or is out of range');
@@ -284,17 +267,6 @@ class Client
             );
         }
 
-        return $this;
-    }
-
-    /**
-     * @param callable $tagsProcessor function (array $tags): array
-     *
-     * @return Client
-     */
-    public function addTagProcessor(callable $tagsProcessor)
-    {
-        $this->tagProcessors[] = $tagsProcessor;
         return $this;
     }
 
@@ -621,7 +593,7 @@ class Client
     {
         $messages = [];
         $prefix = $this->namespace ? $this->namespace . '.' : '';
-        $formattedTags = $this->formatTags($this->processTags(array_merge($this->tags, $tags)));
+        $formattedTags = $this->formatTags(array_merge($this->tags, $tags));
         foreach ($data as $key => $value) {
             $messages[] = $prefix . $key . ':' . $value . $formattedTags;
         }
@@ -649,20 +621,5 @@ class Client
         $this->written = $this->stream->write($this->message);
 
         return $this;
-    }
-
-    /**
-     * Process a set of tags with some user defined processes to add custom runtime data
-     *
-     * @param array $tags
-     *
-     * @return array|mixed
-     */
-    private function processTags(array $tags)
-    {
-        foreach ($this->tagProcessors as $tagProcessor) {
-            $tags = call_user_func($tagProcessor, $tags);
-        }
-        return $tags;
     }
 }
