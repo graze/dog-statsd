@@ -85,7 +85,12 @@ class ClientTest extends TestCase
         $this->assertNull($client);
         $this->assertTrue(is_resource($socket));
 
-        Client::deleteInstance('first');
+        $this->assertTrue(Client::deleteInstance('first'));
         $this->assertFalse(is_resource($socket));
+    }
+
+    public function testDeleteInstanceOfNonExistantInstanceReturnsFalse()
+    {
+        $this->assertFalse(Client::deleteInstance('nope'));
     }
 }
