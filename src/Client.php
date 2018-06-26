@@ -176,11 +176,11 @@ class Client
     }
 
     /**
-     * @param string $name
+     * @param string $name Instance name
      *
      * @return bool true if an instance has been found and removed
      */
-    public static function deleteInstance($name)
+    public static function deleteInstance($name = 'default')
     {
         if (isset(static::$instances[$name])) {
             unset(static::$instances[$name]);

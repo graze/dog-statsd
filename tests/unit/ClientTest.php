@@ -93,4 +93,13 @@ class ClientTest extends TestCase
     {
         $this->assertFalse(Client::deleteInstance('nope'));
     }
+
+    public function testDefaultInstances()
+    {
+        $client1 = Client::instance();
+        $this->assertTrue(Client::deleteInstance());
+        $this->assertFalse(Client::deleteInstance());
+        $client2 = Client::instance();
+        $this->assertNotSame($client1, $client2);
+    }
 }
