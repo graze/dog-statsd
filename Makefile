@@ -50,7 +50,7 @@ lint-fix: ## Run phpcsf and fix possible lint errors.
 	${DOCKER_RUN} vendor/bin/phpcbf -p src/ tests/
 
 test-unit: ## Run the unit testsuite.
-	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite unit
+	${DOCKER_RUN} vendor/bin/phpunit --colors=always --testsuite unit --stop-on-failure
 
 test-integration: ## Run the integration testsuite
 	${MAKE} test-echo

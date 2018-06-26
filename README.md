@@ -119,6 +119,17 @@ $statsd->set('api.unique_logins', $userID, ['tag']);
 $statsd->timing('api.response_time', 245, ['end-point' => 'page', 'env' => 'test']);
 ```
 
+##### Tags Processors
+
+You can add tag processors to inject tags at runtime for each metric.
+
+```php
+$statsd->addTagProcessor(function (array $tags) {
+    $tags['new-key'] = 'new-value';
+    return $tags;
+});
+```
+
 #### Events
 
 ```php
