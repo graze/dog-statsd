@@ -25,6 +25,23 @@ class StreamWriterTest extends TestCase
         $this->assertNull($writer);
     }
 
+    public function testDestructionWillCloseTheSocket()
+    {
+        $writer = new StreamWriter();
+        $writer->write('test');
+
+        // close the socket
+        $reflector = new ReflectionProperty(StreamWriter::class, 'socket');
+        $reflector->setAccessible(true);
+        $socket = $reflector->getValue($writer);
+
+        $this->assertTrue(is_resource($socket));
+        $writer = null;
+
+        $this->assertNull($writer);
+        $this->assertFalse(is_resource($socket));
+    }
+
     public function testSendFailureWillReconnect()
     {
         $writer = new StreamWriter();

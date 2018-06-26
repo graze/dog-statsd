@@ -15,8 +15,8 @@ namespace Graze\DogStatsD;
 
 use Graze\DogStatsD\Exception\ConfigurationException;
 use Graze\DogStatsD\Exception\ConnectionException;
-use Graze\DogStatsD\Stream\WriterInterface;
 use Graze\DogStatsD\Stream\StreamWriter;
+use Graze\DogStatsD\Stream\WriterInterface;
 
 /**
  * StatsD Client Class - Modified to support DataDogs statsd server
@@ -173,6 +173,20 @@ class Client
             static::$instances[$name] = new static($name);
         }
         return static::$instances[$name];
+    }
+
+    /**
+     * @param string $name Instance name
+     *
+     * @return bool true if an instance has been found and removed
+     */
+    public static function deleteInstance($name = 'default')
+    {
+        if (isset(static::$instances[$name])) {
+            unset(static::$instances[$name]);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -595,7 +609,13 @@ class Client
     protected function sendMessages(array $messages)
     {
         if (is_null($this->stream)) {
-            $this->stream = new StreamWriter($this, $this->host, $this->port, $this->onError, $this->timeout);
+            $this->stream = new StreamWriter(
+                $this->instanceId,
+                $this->host,
+                $this->port,
+                $this->onError,
+                $this->timeout
+            );
         }
         $this->message = implode("\n", $messages);
         $this->written = $this->stream->write($this->message);
