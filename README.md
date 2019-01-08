@@ -157,7 +157,7 @@ $statsd->serviceCheck(
         'time' => time(),
     ],
     [
-        'environement' => 'staging',
+        'environment' => 'staging',
     ]
 );
 ```
