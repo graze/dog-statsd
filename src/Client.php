@@ -238,7 +238,7 @@ class Client
      */
     public function configure(array $options = [])
     {
-        $setOption = function ($name, $type = null) use ($options) {
+        $setOption = function ($name, $type = null, $default = false) use ($options) {
             if (isset($options[$name])) {
                 if (!is_null($type) && (gettype($options[$name]) != $type)) {
                     throw new ConfigurationException($this->instanceId, sprintf(
@@ -249,16 +249,22 @@ class Client
                     ));
                 }
                 $this->{$name} = $options[$name];
+            } elseif ($default) {
+                $this->{$name} = $default;
             }
         };
 
-        $setOption('host', 'string');
-        $setOption('port');
+        $setOption('host', 'string', getenv('DD_AGENT_HOST'));
+        $setOption('port', null, getenv('DD_DOGSTATSD_PORT'));
         $setOption('namespace', 'string');
         $setOption('timeout');
         $setOption('onError', 'string');
         $setOption('dataDog', 'boolean');
         $setOption('tags', 'array');
+
+        if (getenv('DD_ENTITY_ID')) {
+            $this->tags['dd.internal.entity_id'] = getenv('DD_ENTITY_ID');
+        }
 
         if (isset($options['tagProcessors']) && is_array($options['tagProcessors'])) {
             foreach ($options['tagProcessors'] as $tagProcessor) {
