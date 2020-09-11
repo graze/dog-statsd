@@ -34,7 +34,7 @@ class DistributionTest extends TestCase
         $this->assertEquals('test_metric:5|d|@0.75', $this->client->getLastMessage());
     }
 
-    public function testIncrementSampleFailure()
+    public function testDistributionSampleFailure()
     {
         $this->client->distribution('test_metric', 5, 0);
         $this->assertEquals('', $this->client->getLastMessage());
