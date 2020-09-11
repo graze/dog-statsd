@@ -471,6 +471,27 @@ class Client
     }
 
     /**
+     * Distribution
+     *
+     * @param string   $metric     Metric to send
+     * @param float    $value      Value to send
+     * @param float    $sampleRate Sample rate of metric
+     * @param string[] $tags       List of tags for this metric
+     *
+     * @return Client This instance
+     */
+    public function distribution($metric, $value, $sampleRate = 1.0, array $tags = [])
+    {
+        if ($this->isSampled($sampleRate, $postfix)) {
+            return $this->send(
+                [$metric => $value . '|d' . $postfix],
+                $tags
+            );
+        }
+        return $this;
+    }
+
+    /**
      * Sets - count the number of unique elements for a group
      *
      * @param string   $metric
