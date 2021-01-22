@@ -13,7 +13,7 @@ class StreamWriterTest extends TestCase
     /** @var resource */
     private $socket;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

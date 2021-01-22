@@ -17,7 +17,7 @@ use Graze\DogStatsD\Test\TestCase;
 
 class EnvConfigurationTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         putenv('DD_AGENT_HOST=');
         putenv('DD_DOGSTATSD_PORT=');
