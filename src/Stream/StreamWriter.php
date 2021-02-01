@@ -81,7 +81,7 @@ class StreamWriter implements WriterInterface
 
     public function __destruct()
     {
-        if ($this->socket) {
+        if ($this->socket && is_resource($this->socket)) {
             // the reason for this failing is that it is already closed, so ignore the result and not messing with
             // parent classes
             @fclose($this->socket);
@@ -100,7 +100,7 @@ class StreamWriter implements WriterInterface
             $totalLength = strlen($message);
             $retries = 1;
             for ($written = 0; $written < $totalLength; $written += $response) {
-                $response = @fwrite($this->socket, substr($message, $written), static::MAX_SEND_LENGTH);
+                $response = is_resource($this->socket) && @fwrite($this->socket, substr($message, $written), static::MAX_SEND_LENGTH);
                 if ($response === false) {
                     if ($retries-- > 0) {
                         $this->socket = $this->connect();

@@ -14,10 +14,11 @@
 namespace Graze\DogStatsD\Test\Unit;
 
 use Graze\DogStatsD\Test\TestCase;
+use Graze\DogStatsD\Exception\ConfigurationException;
 
 class EnvConfigurationTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         putenv('DD_AGENT_HOST=');
         putenv('DD_DOGSTATSD_PORT=');
@@ -40,22 +41,20 @@ class EnvConfigurationTest extends TestCase
         $this->assertEquals(12434, $this->client->getPort());
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: Port is invalid or is out of range
-     */
     public function testLargePortWillThrowAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Option: Port is invalid or is out of range');
+
         putenv('DD_DOGSTATSD_PORT=65536');
         $this->client->configure();
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: Port is invalid or is out of range
-     */
     public function testStringPortWillThrowAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Option: Port is invalid or is out of range');
+
         putenv('DD_DOGSTATSD_PORT=not-integer');
         $this->client->configure();
     }

@@ -19,11 +19,11 @@ class ConnectionTest extends TestCase
 {
     /**
      * Non-integer ports are not acceptable
-     *
-     * @expectedException \Graze\DogStatsD\Exception\ConnectionException
      */
     public function testInvalidHost()
     {
+        $this->expectException('Graze\DogStatsD\Exception\ConnectionException');
+
         $this->client->configure([
             'host' => 'hostdoesnotexiststalleverlol.stupidtld',
         ]);
