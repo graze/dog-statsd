@@ -86,5 +86,6 @@ class EventTest extends TestCase
         );
 
         $this->assertEquals('_e{12,10000}:long_message|' . str_repeat('x', 10000), $this->client->getLastMessage());
+        $this->assertTrue($this->client->wasSuccessful());
     }
 }
