@@ -15,8 +15,11 @@ php:
   - nightly
 
 env:
-  - PREFER_LOWEST=--prefer-lowest
-  - PREFER_LOWEST=
+  global:
+    - XDEBUG_MODE=coverage
+  jobs:
+    - PREFER_LOWEST=--prefer-lowest
+    - PREFER_LOWEST=
 
 matrix:
   allow_failures:
