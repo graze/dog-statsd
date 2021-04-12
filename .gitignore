@@ -2,3 +2,4 @@
 /tests/report/
 composer.json.bak
 .phpunit.result.cache
+composer.lock
