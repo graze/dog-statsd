@@ -121,16 +121,16 @@ class ConfigurationTest extends TestCase
     public function testOnErrorConfiguration()
     {
         // exception is default
-        $this->assertAttributeEquals('exception', 'onError', $this->client);
+        $this->assertEquals('exception', $this->client->getConfig()['onError']);
 
         $this->client->configure(['onError' => 'error']);
-        $this->assertAttributeEquals('error', 'onError', $this->client);
+        $this->assertEquals('error', $this->client->getConfig()['onError']);
 
         $this->client->configure(['onError' => 'exception']);
-        $this->assertAttributeEquals('exception', 'onError', $this->client);
+        $this->assertEquals('exception', $this->client->getConfig()['onError']);
 
         $this->client->configure(['onError' => 'ignore']);
-        $this->assertAttributeEquals('ignore', 'onError', $this->client);
+        $this->assertEquals('ignore', $this->client->getConfig()['onError']);
     }
 
     public function testTagsProcessorAcceptsCallable()
@@ -141,7 +141,7 @@ class ConfigurationTest extends TestCase
         $this->client->configure([
             'tagProcessors' => [$processor],
         ]);
-        $this->assertAttributeEquals([$processor], 'tagProcessors', $this->client);
+        $this->assertEquals([$processor], $this->client->getConfig()['tagProcessors']);
     }
 
     public function testTagsProcessorDoesNotAcceptOtherThings()

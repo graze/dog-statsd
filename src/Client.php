@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of graze/dog-statsd
  *
@@ -291,6 +292,23 @@ class Client
         }
 
         return $this;
+    }
+
+    /**
+     * @return array a list of all the configuration values
+     */
+    public function getConfig(): array
+    {
+        return [
+            'host' => $this->host,
+            'port' => $this->port,
+            'namespace' => $this->namespace,
+            'timeout' => $this->timeout,
+            'onError' => $this->onError,
+            'dataDog' => $this->dataDog,
+            'tags' => $this->tags,
+            'tagProcessors' => $this->tagProcessors
+        ];
     }
 
     /**

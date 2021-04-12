@@ -38,7 +38,7 @@ class ConnectionTest extends TestCase
             'host'    => 'localhost',
             'timeout' => 123.425,
         ]);
-        $this->assertAttributeSame(123.425, 'timeout', $this->client);
+        $this->assertSame(123.425, $this->client->getConfig()['timeout']);
     }
 
     public function testCanBeConfiguredToThrowErrors()
@@ -83,6 +83,6 @@ class ConnectionTest extends TestCase
 
     public function testTimeoutDefaultsToPhpIniDefaultSocketTimeout()
     {
-        $this->assertAttributeEquals(ini_get('default_socket_timeout'), 'timeout', $this->client);
+        $this->assertEquals(ini_get('default_socket_timeout'), $this->client->getConfig()['timeout']);
     }
 }

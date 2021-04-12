@@ -55,7 +55,8 @@ class StreamWriterTest extends TestCase
 
         $this->assertTrue($writer->write('reconnect'));
 
-        $this->assertAttributeInternalType('resource', 'socket', $writer);
+        $socket = $reflector->getValue($writer);
+        $this->assertTrue(is_resource($socket));
     }
 
     public function testWhenItWillRetryIsExponential()
@@ -75,17 +76,12 @@ class StreamWriterTest extends TestCase
         $connect->invoke($writer);
         $connect->invoke($writer);
 
-        $this->assertAttributeGreaterThan(microtime(true) + 2, 'waitTill', $writer);
-        $this->assertAttributeEquals(7, 'numFails', $writer);
+        $this->assertGreaterThan(microtime(true) + 2, $writer->waitTill);
+        $this->assertEquals(7, $writer->numFails);
 
         $writer->write('test');
 
-        $this->assertAttributeEquals(
-            7,
-            'numFails',
-            $writer,
-            'attempting to write with a back-off should not try and connect'
-        );
+        $this->assertEquals(7, $writer->numFails, 'attempting to write with a back-off should not try and connect');
     }
 
     public function testLongMessage()

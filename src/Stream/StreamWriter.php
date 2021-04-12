@@ -55,9 +55,9 @@ class StreamWriter implements WriterInterface
     /** @var string */
     private $instance;
     /** @var int */
-    private $numFails = 0;
+    public $numFails = 0;
     /** @var float */
-    private $waitTill = 0.0;
+    public $waitTill = 0.0;
 
     /**
      * @param string     $instance
