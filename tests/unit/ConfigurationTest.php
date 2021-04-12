@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of graze/dog-statsd
  *
@@ -13,6 +14,7 @@
 
 namespace Graze\DogStatsD\Test\Unit;
 
+use Graze\DogStatsD\Exception\ConfigurationException;
 use Graze\DogStatsD\Test\TestCase;
 
 class ConfigurationTest extends TestCase
@@ -25,34 +27,31 @@ class ConfigurationTest extends TestCase
         $this->assertEquals('127.0.0.1', $this->client->getHost());
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: host is expected to be: 'string', was: 'integer'
-     */
     public function testHostInvalidTypeWillThrowAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Option: host is expected to be: 'string', was: 'integer'");
+
         $this->client->configure([
             'host' => 12434,
         ]);
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: Port is invalid or is out of range
-     */
     public function testLargePortWillThrowAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Option: Port is invalid or is out of range");
+
         $this->client->configure([
             'port' => 65536,
         ]);
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: Port is invalid or is out of range
-     */
     public function testStringPortWillThrowAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Option: Port is invalid or is out of range");
+
         $this->client->configure([
             'port' => 'not-integer',
         ]);
@@ -79,45 +78,41 @@ class ConfigurationTest extends TestCase
         $this->assertEquals(1234, $this->client->getPort());
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: namespace is expected to be: 'string', was: 'integer'
-     */
     public function testInvalidNamespace()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Option: namespace is expected to be: 'string', was: 'integer'");
+
         $this->client->configure([
             'namespace' => 12345,
         ]);
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: dataDog is expected to be: 'boolean', was: 'string'
-     */
     public function testInvalidDataDogThrowAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Option: dataDog is expected to be: 'boolean', was: 'string'");
+
         $this->client->configure([
             'dataDog' => 'invalid',
         ]);
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: tags is expected to be: 'array', was: 'string'
-     */
     public function testInvalidTagsThrowsAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Option: tags is expected to be: 'array', was: 'string'");
+
         $this->client->configure([
             'tags' => 'tag,tag2',
         ]);
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage Option: onError 'somethingelse' is not one of: [error,exception,ignore]
-     */
     public function testInvalidOnErrorThrowsAnException()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Option: onError 'somethingelse' is not one of: [error,exception,ignore]");
+
         $this->client->configure([
             'onError' => 'somethingelse',
         ]);
@@ -149,12 +144,11 @@ class ConfigurationTest extends TestCase
         $this->assertAttributeEquals([$processor], 'tagProcessors', $this->client);
     }
 
-    /**
-     * @expectedException \Graze\DogStatsD\Exception\ConfigurationException
-     * @expectedExceptionMessage supplied tag processor is not a callable
-     */
     public function testTagsProcessorDoesNotAcceptOtherThings()
     {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("supplied tag processor is not a callable");
+
         $this->client->configure([
             'tagProcessors' => ['a string']
         ]);

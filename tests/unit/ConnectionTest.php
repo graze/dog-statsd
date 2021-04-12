@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of graze/dog-statsd
  *
@@ -13,17 +14,18 @@
 
 namespace Graze\DogStatsD\Test\Unit;
 
+use Graze\DogStatsD\Exception\ConnectionException;
 use Graze\DogStatsD\Test\TestCase;
 
 class ConnectionTest extends TestCase
 {
     /**
      * Non-integer ports are not acceptable
-     *
-     * @expectedException \Graze\DogStatsD\Exception\ConnectionException
      */
     public function testInvalidHost()
     {
+        $this->expectException(ConnectionException::class);
+
         $this->client->configure([
             'host' => 'hostdoesnotexiststalleverlol.stupidtld',
         ]);
