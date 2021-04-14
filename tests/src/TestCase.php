@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of graze/dog-statsd
  *
@@ -23,7 +24,7 @@ class TestCase extends PHPUnitTestCase
      */
     protected $client;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->client = new Client();
         $this->client->configure();

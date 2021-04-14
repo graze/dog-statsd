@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of graze/dog-statsd
  *
@@ -13,17 +14,18 @@
 
 namespace Graze\DogStatsD\Test\Unit;
 
+use Graze\DogStatsD\Exception\ConnectionException;
 use Graze\DogStatsD\Test\TestCase;
 
 class ConnectionTest extends TestCase
 {
     /**
      * Non-integer ports are not acceptable
-     *
-     * @expectedException \Graze\DogStatsD\Exception\ConnectionException
      */
     public function testInvalidHost()
     {
+        $this->expectException(ConnectionException::class);
+
         $this->client->configure([
             'host' => 'hostdoesnotexiststalleverlol.stupidtld',
         ]);
@@ -36,7 +38,7 @@ class ConnectionTest extends TestCase
             'host'    => 'localhost',
             'timeout' => 123.425,
         ]);
-        $this->assertAttributeSame(123.425, 'timeout', $this->client);
+        $this->assertSame(123.425, $this->client->getConfig()['timeout']);
     }
 
     public function testCanBeConfiguredToThrowErrors()
@@ -81,6 +83,6 @@ class ConnectionTest extends TestCase
 
     public function testTimeoutDefaultsToPhpIniDefaultSocketTimeout()
     {
-        $this->assertAttributeEquals(ini_get('default_socket_timeout'), 'timeout', $this->client);
+        $this->assertEquals(ini_get('default_socket_timeout'), $this->client->getConfig()['timeout']);
     }
 }

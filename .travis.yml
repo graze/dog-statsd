@@ -7,19 +7,24 @@ cache:
     - $HOME/.composer/cache/files
 
 php:
-  - 5.6
-  - 7.0
   - 7.1
   - 7.2
+  - 7.3
+  - 7.4
+  - 8.0
   - nightly
 
 env:
-  - PREFER_LOWEST=--prefer-lowest
-  - PREFER_LOWEST=
+  global:
+    - XDEBUG_MODE=coverage
+  jobs:
+    - PREFER_LOWEST=--prefer-lowest
+    - PREFER_LOWEST=
 
 matrix:
   allow_failures:
     - php: nightly
+    - php: 8.0
 
 before_script:
   - make ensure-composer-file PHP_VER=$(php -r "echo PHP_VERSION;")
@@ -27,7 +32,10 @@ before_script:
 
 script:
   - vendor/bin/phpcs -p --warning-severity=0 src/ tests/
-  - vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover --testsuite unit
+  - vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover
+    --testsuite unit
 
 after_script:
-  - test -f ./tests/report/coverage.clover && (wget https://scrutinizer-ci.com/ocular.phar; php ocular.phar code-coverage:upload --format=php-clover ./tests/report/coverage.clover)
+  - test -f ./tests/report/coverage.clover && (wget
+    https://scrutinizer-ci.com/ocular.phar; php ocular.phar code-coverage:upload
+    --format=php-clover ./tests/report/coverage.clover)
