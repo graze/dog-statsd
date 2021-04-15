@@ -68,4 +68,9 @@ jobs:
       - name: "Run tests"
         run: |
           vendor/bin/phpunit --coverage-clover=./tests/report/coverage.clover --testsuite unit
+
+      - name: Report Code Coverage
+        run: |
           test -f ./tests/report/coverage.clover && (wget https://scrutinizer-ci.com/ocular.phar; php ocular.phar code-coverage:upload --format=php-clover ./tests/report/coverage.clover)
+        if:
+          "${{ matrix.php-version == '7.4' && contains(matrix.dependencies, 'highest') }}"
