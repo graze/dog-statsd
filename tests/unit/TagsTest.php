@@ -13,6 +13,7 @@
 
 namespace Graze\DogStatsD\Test\Unit;
 
+use Graze\DogStatsD\Client;
 use Graze\DogStatsD\Test\TestCase;
 
 class TagsTest extends TestCase
@@ -51,5 +52,25 @@ class TagsTest extends TestCase
         ]);
         $this->client->increment('test_metric', 1, 1, ['tag2']);
         $this->assertEquals('test_metric:1|c|#tag1,tag2', $this->client->getLastMessage());
+    }
+
+    public function testDefaultTagsGetAddedToEventRequest()
+    {
+        $this->client->configure([
+            'tags' => ['tag1'],
+        ]);
+
+        $this->client->event('some_title', 'textAndThings', [], ['tag2']);
+        $this->assertEquals('_e{10,13}:some_title|textAndThings|#tag1,tag2', $this->client->getLastMessage());
+    }
+
+    public function testDefaultTagsGetAddedToServiceCheckRequest()
+    {
+        $this->client->configure([
+            'tags' => ['tag1'],
+        ]);
+
+        $this->client->serviceCheck('service.api', Client::STATUS_OK, [], ['tag2']);
+        $this->assertEquals('_sc|service.api|0|#tag1,tag2', $this->client->getLastMessage());
     }
 }
