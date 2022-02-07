@@ -564,7 +564,7 @@ class Client
             }
         }
 
-        $value .= $this->formatTags($tags);
+        $value .= $this->formatTags($this->processTags(array_merge($this->tags, $tags)));
 
         return $this->sendMessages([
             sprintf('%s:%s', $metric, $value),
@@ -604,7 +604,7 @@ class Client
         };
 
         $applyMetadata($metadata, $this->serviceCheckMetaData);
-        $value .= $this->formatTags($tags);
+        $value .= $this->formatTags($this->processTags(array_merge($this->tags, $tags)));
         $applyMetadata($metadata, $this->serviceCheckMessage);
 
         return $this->sendMessages([
